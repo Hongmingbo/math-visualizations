@@ -178,6 +178,11 @@
                     <input type="range" id="c" min="-10" max="10" step="0.1" value="0">
                     <div class="value-display" id="c-display">c = 0</div>
                 </div>
+                <div class="control-group" style="background: #fff3e0;">
+                    <label>坐标分度值</label>
+                    <input type="range" id="scale" min="20" max="80" step="5" value="40">
+                    <div class="value-display" id="scale-display">每格 = 1</div>
+                </div>
             </div>
             
             <div class="canvas-container">
@@ -241,7 +246,14 @@
         function draw() {
             const {a, b, c} = getValues();
             const w = canvas.width, h = canvas.height;
-            const scale = 40, ox = w / 2, oy = h / 2;
+            const scale = parseFloat(document.getElementById('scale').value);
+            const ox = w / 2, oy = h / 2;
+            
+            // 更新分度值显示
+            document.getElementById('scale-display').textContent = `每格 = 1`;
+            const maxTick = Math.floor(Math.min(w, h) / 2 / scale);
+            const xMax = Math.min(10, maxTick);
+            const yMax = Math.min(5, maxTick);
             
             ctx.fillStyle = '#fafafa';
             ctx.fillRect(0, 0, w, h);
@@ -259,7 +271,8 @@
             ctx.fillStyle = '#666';
             ctx.font = '12px Arial';
             ctx.textAlign = 'center';
-            for (let i = -10; i <= 10; i++) {
+            ctx.strokeStyle = '#333';
+            for (let i = -xMax; i <= xMax; i++) {
                 if (i !== 0) {
                     const x = ox + i * scale;
                     ctx.fillText(i.toString(), x, oy + 20);
@@ -270,7 +283,7 @@
                 }
             }
             ctx.textAlign = 'right';
-            for (let i = -5; i <= 5; i++) {
+            for (let i = -yMax; i <= yMax; i++) {
                 if (i !== 0) {
                     const y = oy - i * scale;
                     ctx.fillText(i.toString(), ox - 10, y + 5);
@@ -375,6 +388,7 @@
         document.getElementById('a').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
         document.getElementById('b').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
         document.getElementById('c').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
+        document.getElementById('scale').addEventListener('input', draw);
         
         draw();
     </script>
