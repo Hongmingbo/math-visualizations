@@ -244,12 +244,26 @@
                 </div>
             </div>
             
+            <!-- 自定义函数输入 -->
+            <div class="controls">
+                <div class="control-card" style="background: #e3f2fd; border: 2px solid #4facfe;">
+                    <h3>📝 自定义函数</h3>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <span style="font-size: 1.2em;">y =</span>
+                        <input type="text" id="custom-input" placeholder="输入函数，如: 1/x+2 或 sin(x)/x" style="flex: 1; min-width: 200px; padding: 10px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                        <button onclick="applyCustom()" style="padding: 10px 20px; border: none; border-radius: 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; cursor: pointer;">应用</button>
+                        <button onclick="clearCustom()" style="padding: 10px 20px; border: 2px solid #4facfe; border-radius: 20px; background: white; color: #4facfe; cursor: pointer;">清除</button>
+                    </div>
+                    <p style="margin-top: 8px; color: #666; font-size: 0.85em;">支持: + - * / ^ ( ) x 数字，如: 1/x, 2/x+1, sin(x)/x</p>
+                </div>
+            </div>
+            
             <!-- 控制面板 -->
             <div class="controls">
                 <div class="control-card">
                     <h3>🔴 比例系数 k</h3>
                     <div class="slider-container">
-                        <input type="range" id="k" min="-10" max="10" step="0.5" value="1">
+                        <input type="range" id="k" min="-10" max="10" step="0.1" value="1">
                     </div>
                     <div class="value-display" id="k-display">k = 1</div>
                 </div>
@@ -346,6 +360,30 @@
     <script>
         const canvas = document.getElementById('graph');
         const ctx = canvas.getContext('2d');
+        let customFunc = null;
+        
+        // 解析自定义函数
+        function parseFunction(expr) {
+            expr = expr.replace(/\s/g, '').replace(/\^/g, '**');
+            return (x) => {
+                try {
+                    return eval(expr);
+                } catch(e) { return NaN; }
+            };
+        }
+        
+        function applyCustom() {
+            const input = document.getElementById('custom-input').value;
+            if (!input) return;
+            customFunc = parseFunction(input);
+            draw();
+        }
+        
+        function clearCustom() {
+            document.getElementById('custom-input').value = '';
+            customFunc = null;
+            draw();
+        }
         
         function resize() {
             canvas.width = canvas.offsetWidth;
@@ -461,11 +499,29 @@
             ctx.fillText('y', ox + 20, 20);
             
             // 绘制反比例函数
-            if (k !== 0) {
-                // k>0 用蓝色，k<0 用绿色
-                ctx.strokeStyle = k > 0 ? '#4facfe' : '#27ae60';
-                ctx.lineWidth = 4;
-                
+            ctx.strokeStyle = customFunc ? '#e74c3c' : (k > 0 ? '#4facfe' : '#27ae60');
+            ctx.lineWidth = 4;
+            
+            if (customFunc) {
+                // 绘制自定义函数
+                for (let side = -1; side <= 1; side += 2) {
+                    ctx.beginPath();
+                    let first = true;
+                    const start = side === 1 ? 0.01 : -0.01;
+                    const end = side === 1 ? range : -range;
+                    const step = side === 1 ? 0.01 : -0.01;
+                    for (let x = start; side === 1 ? x <= end : x >= end; x += step) {
+                        const y = customFunc(x);
+                        if (!isNaN(y) && Math.abs(y) <= range) {
+                            const px = ox + x * scale;
+                            const py = oy - y * scale;
+                            if (first) { ctx.moveTo(px, py); first = false; }
+                            else { ctx.lineTo(px, py); }
+                        }
+                    }
+                    ctx.stroke();
+                }
+            } else if (k !== 0) {
                 // 右支 (x > 0)
                 ctx.beginPath();
                 let first = true;
@@ -525,6 +581,8 @@
         
         function setK(k) {
             document.getElementById('k').value = k;
+            customFunc = null;
+            document.getElementById('custom-input').value = '';
             draw();
         }
         
@@ -534,10 +592,12 @@
         
         function randomK() {
             const k = (Math.floor(Math.random() * 20) - 10) || 1;
+            customFunc = null;
+            document.getElementById('custom-input').value = '';
             setK(k);
         }
         
-        document.getElementById('k').addEventListener('input', draw);
+        document.getElementById('k').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
         document.getElementById('range').addEventListener('input', () => {
             document.getElementById('range-display').textContent = `±${document.getElementById('range').value}`;
             draw();
