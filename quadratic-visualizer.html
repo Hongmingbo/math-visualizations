@@ -222,16 +222,18 @@
         const canvas = document.getElementById('graph');
         const ctx = canvas.getContext('2d');
         let customFunc = null;
+        let customExpr = '';
         let currentScale = 40;
         
         function parseFunction(expr) {
-            expr = expr.replace(/\s/g, '').replace(/\^/g, '**');
-            return (x) => { try { return eval(expr); } catch(e) { return NaN; } };
+            const cleanExpr = expr.replace(/\s/g, '').replace(/\^/g, '**');
+            return (x) => { try { return eval(cleanExpr); } catch(e) { return NaN; } };
         }
         
         function applyCustom() {
             const input = document.getElementById('custom-input').value;
             if (!input) return;
+            customExpr = input;
             customFunc = parseFunction(input);
             draw();
         }
@@ -239,6 +241,7 @@
         function clearCustom() {
             document.getElementById('custom-input').value = '';
             customFunc = null;
+            customExpr = '';
             draw();
         }
         
@@ -357,7 +360,7 @@
         
         function updateInfo(a, b, c, minVal, maxVal, minX, maxX) {
             if (customFunc) {
-                document.getElementById('formula-display').textContent = 'y = f(x)';
+                document.getElementById('formula-display').textContent = 'y = ' + (customExpr || 'f(x)');
                 document.getElementById('a-display').textContent = `f(0)=${customFunc(0).toFixed(2)}`;
                 document.getElementById('b-display').textContent = `f(1)=${customFunc(1).toFixed(2)}`;
                 document.getElementById('c-display').textContent = `f(-1)=${customFunc(-1).toFixed(2)}`;
