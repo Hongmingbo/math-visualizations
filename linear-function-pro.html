@@ -670,11 +670,19 @@
         function updateInfo(k, b) {
             if (customFunc) {
                 // 自定义函数模式 - 显示具体数值
-                document.getElementById('formula-k').textContent = '?';
-                document.getElementById('formula-sign').textContent = '';
-                document.getElementById('formula-b').textContent = '自定义';
-                document.getElementById('k-display').textContent = '自定义';
-                document.getElementById('b-display').textContent = '自定义';
+                document.getElementById('formula-k').textContent = 'f';
+                document.getElementById('formula-sign').textContent = '(x)';
+                document.getElementById('formula-b').textContent = '';
+                
+                // 计算 y 轴截距 (x=0)
+                const yInt = customFunc(0);
+                const yIntStr = isNaN(yInt) ? '无' : yInt.toFixed(2);
+                document.getElementById('k-display').textContent = `f(0)=${yIntStr}`;
+                
+                // 计算 x=1 处的值
+                const y1 = customFunc(1);
+                const y1Str = isNaN(y1) ? '无' : y1.toFixed(2);
+                document.getElementById('b-display').textContent = `f(1)=${y1Str}`;
                 
                 // 计算 y 轴截距 (x=0)
                 const yInt = customFunc(0);
