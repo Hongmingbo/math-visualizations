@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一次函数图像可视化教学</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .formula-box {
+            background: #f8f9fa;
+            border-left: 5px solid #11998e;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 0 10px 10px 0;
+        }
+        .formula {
+            font-size: 1.8em;
+            color: #333;
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .control-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #11998e;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .value-display {
+            text-align: center;
+            font-size: 1.5em;
+            color: #11998e;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .canvas-container {
+            background: white;
+            border: 3px solid #11998e;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.2);
+        }
+        canvas {
+            width: 100%;
+            height: 400px;
+            border-radius: 10px;
+        }
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .info-card {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+        .info-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        .info-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        .explanation {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .explanation h3 {
+            color: #11998e;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .explanation p {
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .explanation ul {
+            margin-left: 20px;
+            color: #555;
+        }
+        .explanation li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #11998e;
+            border: 2px solid #11998e;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .special-points {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .point-card {
+            background: white;
+            border: 2px solid #11998e;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .point-card h4 {
+            color: #11998e;
+            margin-bottom: 10px;
+        }
+        .point-card .coord {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 一次函数图像可视化</h1>
+            <p>拖动滑块，探索 y = kx + b 的奥秘</p>
+        </div>
+        
+        <div class="content">
+            <div class="formula-box">
+                <div class="formula">y = <span id="k-val">1</span>x + <span id="b-val">0</span></div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>🔵 斜率 (k) - 决定倾斜程度</label>
+                    <input type="range" id="k" min="-5" max="5" step="0.1" value="1">
+                    <div class="value-display" id="k-display">k = 1</div>
+                </div>
+                <div class="control-group">
+                    <label>🟢 截距 (b) - 决定上下位置</label>
+                    <input type="range" id="b" min="-10" max="10" step="0.5" value="0">
+                    <div class="value-display" id="b-display">b = 0</div>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="graph"></canvas>
+            </div>
+            
+            <div class="info-panel">
+                <div class="info-card">
+                    <h3>📐 斜率 (k)</h3>
+                    <div class="value" id="slope">1</div>
+                </div>
+                <div class="info-card">
+                    <h3>📍 y轴截距</h3>
+                    <div class="value" id="y-intercept">0</div>
+                </div>
+                <div class="info-card">
+                    <h3>📍 x轴截距</h3>
+                    <div class="value" id="x-intercept">0</div>
+                </div>
+                <div class="info-card">
+                    <h3>↗️ 倾斜方向</h3>
+                    <div class="value" id="direction">上升</div>
+                </div>
+            </div>
+            
+            <div class="special-points">
+                <div class="point-card">
+                    <h4>与 y 轴交点</h4>
+                    <div class="coord" id="y-point">(0, 0)</div>
+                </div>
+                <div class="point-card">
+                    <h4>与 x 轴交点</h4>
+                    <div class="coord" id="x-point">(0, 0)</div>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="setExample(1, 0)">y = x</button>
+                <button class="btn btn-primary" onclick="setExample(-1, 0)">y = -x</button>
+                <button class="btn btn-primary" onclick="setExample(2, 3)">y = 2x + 3</button>
+                <button class="btn btn-primary" onclick="setExample(0.5, -2)">y = 0.5x - 2</button>
+                <button class="btn btn-secondary" onclick="setExample(0, 5)">y = 5 (水平线)</button>
+                <button class="btn btn-secondary" onclick="randomQuiz()">🎲 随机挑战</button>
+                <button class="btn btn-secondary" onclick="reset()">🔄 重置</button>
+            </div>
+            
+            <div class="explanation">
+                <h3>📚 知识点讲解</h3>
+                <p><strong>一次函数的一般形式：</strong>y = kx + b (k ≠ 0)</p>
+                <ul>
+                    <li><strong>k - 斜率（倾斜程度）：</strong>
+                        <ul>
+                            <li>k > 0：直线从左下向右上倾斜，y 随 x 增大而增大</li>
+                            <li>k < 0：直线从左上向右下倾斜，y 随 x 增大而减小</li>
+                            <li>k = 0：水平直线（y = b）</li>
+                            <li>|k| 越大，直线越陡峭</li>
+                        </ul>
+                    </li>
+                    <li><strong>b - y轴截距：</strong>
+                        <ul>
+                            <li>直线与 y 轴的交点坐标为 (0, b)</li>
+                            <li>b > 0：交点在 y 轴正半轴</li>
+                            <li>b < 0：交点在 y 轴负半轴</li>
+                            <li>b = 0：直线过原点</li>
+                        </ul>
+                    </li>
+                    <li><strong>x轴截距：</strong>
+                        <ul>
+                            <li>令 y = 0，解得 x = -b/k</li>
+                            <li>直线与 x 轴的交点坐标为 (-b/k, 0)</li>
+                        </ul>
+                    </li>
+                    <li><strong>特殊直线：</strong>
+                        <ul>
+                            <li>y = x：第一、三象限角平分线，k = 1</li>
+                            <li>y = -x：第二、四象限角平分线，k = -1</li>
+                            <li>y = b：水平直线，k = 0</li>
+                            <li>x = a：垂直直线（不是函数）</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graph');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            draw();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        function getValues() {
+            return {
+                k: parseFloat(document.getElementById('k').value),
+                b: parseFloat(document.getElementById('b').value)
+            };
+        }
+        
+        function draw() {
+            const {k, b} = getValues();
+            const w = canvas.width;
+            const h = canvas.height;
+            const scale = 40;
+            const ox = w / 2;
+            const oy = h / 2;
+            
+            // 清空画布
+            ctx.fillStyle = '#fafafa';
+            ctx.fillRect(0, 0, w, h);
+            
+            // 绘制网格
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < w; i += scale) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, h);
+                ctx.stroke();
+            }
+            for (let i = 0; i < h; i += scale) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(w, i);
+                ctx.stroke();
+            }
+            
+            // 绘制坐标轴
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, oy);
+            ctx.lineTo(w, oy);
+            ctx.moveTo(ox, 0);
+            ctx.lineTo(ox, h);
+            ctx.stroke();
+            
+            // 绘制刻度
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            for (let i = -10; i <= 10; i++) {
+                if (i !== 0) {
+                    ctx.fillText(i, ox + i * scale, oy + 20);
+                    ctx.beginPath();
+                    ctx.moveTo(ox + i * scale, oy - 5);
+                    ctx.lineTo(ox + i * scale, oy + 5);
+                    ctx.stroke();
+                }
+            }
+            ctx.textAlign = 'right';
+            for (let i = -5; i <= 5; i++) {
+                if (i !== 0) {
+                    ctx.fillText(-i, ox - 10, oy + i * scale + 5);
+                    ctx.beginPath();
+                    ctx.moveTo(ox - 5, oy + i * scale);
+                    ctx.lineTo(ox + 5, oy + i * scale);
+                    ctx.stroke();
+                }
+            }
+            ctx.fillText('O', ox - 15, oy + 20);
+            
+            // 绘制一次函数直线
+            ctx.strokeStyle = '#11998e';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            const x1 = -10;
+            const y1 = k * x1 + b;
+            const x2 = 10;
+            const y2 = k * x2 + b;
+            
+            const px1 = ox + x1 * scale;
+            const py1 = oy - y1 * scale;
+            const px2 = ox + x2 * scale;
+            const py2 = oy - y2 * scale;
+            
+            ctx.moveTo(px1, py1);
+            ctx.lineTo(px2, py2);
+            ctx.stroke();
+            
+            // 绘制 y 轴截距点
+            const cy = b;
+            const cpy = oy - cy * scale;
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(ox, cpy, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`y截距(0, ${b})`, 15, cpy - 10);
+            
+            // 绘制 x 轴截距点
+            if (k !== 0) {
+                const xx = -b / k;
+                const xpx = ox + xx * scale;
+                ctx.fillStyle = '#3498db';
+                ctx.beginPath();
+                ctx.arc(xpx, oy, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#3498db';
+                ctx.fillText(`x截距(${xx.toFixed(2)}, 0)`, xpx + 10, oy - 10);
+            }
+            
+            updateInfo(k, b);
+        }
+        
+        function updateInfo(k, b) {
+            document.getElementById('k-val').textContent = k;
+            document.getElementById('b-val').textContent = b >= 0 ? '+ ' + b : '- ' + Math.abs(b);
+            document.getElementById('k-display').textContent = `k = ${k}`;
+            document.getElementById('b-display').textContent = `b = ${b}`;
+            
+            document.getElementById('slope').textContent = k;
+            document.getElementById('y-intercept').textContent = b;
+            
+            if (k !== 0) {
+                const xInt = -b / k;
+                document.getElementById('x-intercept').textContent = xInt.toFixed(2);
+                document.getElementById('x-point').textContent = `(${xInt.toFixed(2)}, 0)``;
+            } else {
+                document.getElementById('x-intercept').textContent = '无';
+                document.getElementById('x-point').textContent = '无';
+            }
+            
+            document.getElementById('y-point').textContent = `(0, ${b})`;
+            
+            if (k > 0) document.getElementById('direction').textContent = '上升 ↗️';
+            else if (k < 0) document.getElementById('direction').textContent = '下降 ↘️';
+            else document.getElementById('direction').textContent = '水平 →';
+        }
+        
+        function setExample(k, b) {
+            document.getElementById('k').value = k;
+            document.getElementById('b').value = b;
+            draw();
+        }
+        
+        function reset() {
+            setExample(1, 0);
+        }
+        
+        function randomQuiz() {
+            const k = (Math.floor(Math.random() * 10) - 5) || 1;
+            const b = Math.floor(Math.random() * 10) - 5;
+            setExample(k, b);
+            alert(`🎲 新挑战：y = ${k}x + ${b}\\n观察这条直线的特点！`);
+        }
+        
+        document.getElementById('k').addEventListener('input', draw);
+        document.getElementById('b').addEventListener('input', draw);
+        
+        draw();
+    </script>
+</body>
+</html>
