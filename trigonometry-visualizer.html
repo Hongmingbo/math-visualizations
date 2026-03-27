@@ -597,6 +597,17 @@
             
             document.getElementById('info-angle').textContent = angle + '°';
             
+            if (customFunc) {
+                // 自定义函数模式
+                document.getElementById('info-angle').textContent = angle + '°';
+                document.getElementById('info-radian').textContent = rad.toFixed(3);
+                const value = customFunc(rad);
+                document.getElementById('info-value').textContent = isNaN(value) ? '无' : value.toFixed(3);
+                document.getElementById('func-name').textContent = 'f(θ)';
+                document.getElementById('info-quadrant').textContent = '自定义';
+                return;
+            }
+            
             const rad = toRad(angle);
             let radText;
             if (angle === 0) radText = '0';
