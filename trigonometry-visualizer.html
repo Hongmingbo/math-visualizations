@@ -244,11 +244,21 @@
                 </div>
             </div>
             
+            <!-- 自定义函数输入 -->
+            <div class="controls" style="background: #fce4ec; border: 2px solid #f5576c;">
+                <div class="control-row">
+                    <span class="control-label">📝 自定义</span>
+                    <input type="text" id="custom-input" placeholder="输入函数，如: 2*sin(x) 或 x^2" style="flex: 1; padding: 10px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                    <button onclick="applyCustom()" style="padding: 10px 20px; border: none; border-radius: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; cursor: pointer;">应用</button>
+                    <button onclick="clearCustom()" style="padding: 10px 20px; border: 2px solid #f5576c; border-radius: 20px; background: white; color: #f5576c; cursor: pointer;">清除</button>
+                </div>
+            </div>
+            
             <!-- 控制面板 -->
             <div class="controls">
                 <div class="control-row">
                     <span class="control-label">角度 θ</span>
-                    <input type="range" id="angle" min="0" max="720" value="45">
+                    <input type="range" id="angle" min="0" max="720" step="0.1" value="45">
                     <div class="value-box" id="angle-value">45°</div>
                 </div>
                 <div class="control-row">
@@ -324,9 +334,33 @@
 
     <script>
         let currentFunc = 'sin';
+        let customFunc = null;
         const circleCanvas = document.getElementById('circleCanvas');
         const graphCanvas = document.getElementById('graphCanvas');
         const circleCtx = circleCanvas.getContext('2d');
+        
+        // 解析自定义函数
+        function parseFunction(expr) {
+            expr = expr.replace(/\s/g, '').replace(/\^/g, '**');
+            return (x) => {
+                try {
+                    return eval(expr);
+                } catch(e) { return NaN; }
+            };
+        }
+        
+        function applyCustom() {
+            const input = document.getElementById('custom-input').value;
+            if (!input) return;
+            customFunc = parseFunction(input);
+            draw();
+        }
+        
+        function clearCustom() {
+            document.getElementById('custom-input').value = '';
+            customFunc = null;
+            draw();
+        }
         const graphCtx = graphCanvas.getContext('2d');
         
         function resize() {
@@ -359,6 +393,9 @@
         }
         
         function getFuncValue(angle, amp, omega) {
+            if (customFunc) {
+                return customFunc(toRad(angle));
+            }
             const rad = toRad(angle * omega);
             switch(currentFunc) {
                 case 'sin': return amp * Math.sin(rad);
@@ -507,7 +544,7 @@
             ctx.stroke();
             
             // 绘制函数曲线
-            ctx.strokeStyle = '#f5576c';
+            ctx.strokeStyle = customFunc ? '#e74c3c' : '#f5576c';
             ctx.lineWidth = 3;
             ctx.beginPath();
             
@@ -586,9 +623,9 @@
             document.getElementById('info-quadrant').textContent = quadrant;
         }
         
-        document.getElementById('angle').addEventListener('input', draw);
-        document.getElementById('amplitude').addEventListener('input', draw);
-        document.getElementById('omega').addEventListener('input', draw);
+        document.getElementById('angle').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
+        document.getElementById('amplitude').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
+        document.getElementById('omega').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
         
         resize();
     </script>
