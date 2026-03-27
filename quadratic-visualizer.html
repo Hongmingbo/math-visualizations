@@ -521,6 +521,35 @@
         
         // 更新信息面板
         function updateInfo(a, b, c) {
+            if (customFunc) {
+                // 自定义函数模式
+                document.getElementById('a-val').textContent = '?';
+                document.getElementById('b-val').textContent = '';
+                document.getElementById('c-val').textContent = '自定义';
+                document.getElementById('a-display').textContent = '自定义';
+                document.getElementById('b-display').textContent = '自定义';
+                document.getElementById('c-display').textContent = '自定义';
+                
+                // 找顶点（通过数值方法找极值）
+                let minY = Infinity, maxY = -Infinity, minX = 0, maxX = 0;
+                for (let x = -10; x <= 10; x += 0.01) {
+                    const y = customFunc(x);
+                    if (!isNaN(y)) {
+                        if (y < minY) { minY = y; minX = x; }
+                        if (y > maxY) { maxY = y; maxX = x; }
+                    }
+                }
+                const isMin = Math.abs(minY) < Math.abs(maxY);
+                const vx = isMin ? minX : maxX;
+                const vy = isMin ? minY : maxY;
+                document.getElementById('vertex').textContent = `(${vx.toFixed(2)}, ${vy.toFixed(2)})`;
+                document.getElementById('axis').textContent = `x ≈ ${vx.toFixed(2)}`;
+                document.getElementById('direction').textContent = isMin ? '向上 ↗️' : '向下 ↘️';
+                document.getElementById('delta').textContent = '-';
+                return;
+            }
+            
+            // 标准二次函数模式
             document.getElementById('a-val').textContent = a;
             document.getElementById('b-val').textContent = b >= 0 ? '+ ' + b : '- ' + Math.abs(b);
             document.getElementById('c-val').textContent = c >= 0 ? '+ ' + c : '- ' + Math.abs(c);
