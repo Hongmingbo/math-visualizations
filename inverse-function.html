@@ -563,6 +563,17 @@
         }
         
         function updateInfo(k) {
+            if (customFunc) {
+                // 自定义函数模式
+                document.getElementById('formula-k').textContent = '?';
+                document.getElementById('k-display').textContent = '自定义';
+                document.getElementById('info-k').textContent = '-';
+                document.getElementById('info-quadrant').textContent = '自定义';
+                document.getElementById('info-mono').textContent = '未知';
+                return;
+            }
+            
+            // 标准反比例函数模式
             document.getElementById('formula-k').textContent = k;
             document.getElementById('k-display').textContent = `k = ${k}`;
             document.getElementById('info-k').textContent = k;
