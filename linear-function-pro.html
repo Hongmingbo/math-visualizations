@@ -668,12 +668,40 @@
         }
         
         function updateInfo(k, b) {
-            // 更新公式
+            if (customFunc) {
+                // 自定义函数模式
+                document.getElementById('formula-k').textContent = '?';
+                document.getElementById('formula-sign').textContent = '';
+                document.getElementById('formula-b').textContent = '自定义';
+                document.getElementById('k-display').textContent = '自定义';
+                document.getElementById('b-display').textContent = '自定义';
+                
+                // 计算 y 轴截距 (x=0)
+                const yInt = customFunc(0);
+                document.getElementById('slope').textContent = '-';
+                document.getElementById('y-int').textContent = isNaN(yInt) ? '无' : yInt.toFixed(2);
+                document.getElementById('y-point').textContent = isNaN(yInt) ? '无' : `(0, ${yInt.toFixed(2)})`;
+                
+                // 尝试找 x 轴截距 (y=0)
+                let xInt = null;
+                for (let x = -20; x <= 20; x += 0.01) {
+                    const y = customFunc(x);
+                    const y2 = customFunc(x + 0.01);
+                    if (!isNaN(y) && !isNaN(y2) && y * y2 < 0) {
+                        xInt = x;
+                        break;
+                    }
+                }
+                document.getElementById('x-int').textContent = xInt !== null ? xInt.toFixed(2) : '无';
+                document.getElementById('x-point').textContent = xInt !== null ? `(${xInt.toFixed(2)}, 0)` : '无';
+                document.getElementById('monotonic').textContent = '未知';
+                return;
+            }
+            
+            // 标准一次函数模式
             document.getElementById('formula-k').textContent = k;
             document.getElementById('formula-sign').textContent = b >= 0 ? '+' : '-';
             document.getElementById('formula-b').textContent = Math.abs(b);
-            
-            // 更新显示
             document.getElementById('k-display').textContent = `k = ${k}`;
             document.getElementById('b-display').textContent = `b = ${b}`;
             document.getElementById('slope').textContent = k;
