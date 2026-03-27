@@ -318,6 +318,18 @@
                 </div>
             </div>
             
+            <!-- 自定义函数输入 -->
+            <div class="custom-function" style="background: #f8f9fa; padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 2px solid #667eea;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">📝 自定义函数</h3>
+                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <span style="font-size: 1.2em;">y =</span>
+                    <input type="text" id="custom-input" placeholder="输入函数，如: 2*x + 3 或 sin(x)" style="flex: 1; min-width: 200px; padding: 12px 20px; border: 2px solid #ddd; border-radius: 10px; font-size: 1.1em;">
+                    <button onclick="applyCustom()" style="padding: 12px 30px; border: none; border-radius: 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; font-weight: 600;">应用</button>
+                    <button onclick="clearCustom()" style="padding: 12px 30px; border: 2px solid #667eea; border-radius: 25px; background: white; color: #667eea; cursor: pointer; font-weight: 600;">清除</button>
+                </div>
+                <p style="margin-top: 10px; color: #666; font-size: 0.9em;">支持: + - * / ^ ( ) x 数字，如: 2*x+1, x^2-3, sin(x), cos(x)</p>
+            </div>
+            
             <!-- 控制面板 -->
             <div class="controls">
                 <div class="control-card">
@@ -338,7 +350,7 @@
                             <span>向下</span>
                             <span>向上</span>
                         </div>
-                        <input type="range" id="b" min="-10" max="10" step="0.5" value="0">
+                        <input type="range" id="b" min="-10" max="10" step="0.1" value="0">
                     </div>
                     <div class="value-display" id="b-display">b = 0</div>
                 </div>
@@ -439,6 +451,30 @@
     <script>
         const canvas = document.getElementById('graph');
         const ctx = canvas.getContext('2d');
+        let customFunc = null;
+        
+        // 解析自定义函数
+        function parseFunction(expr) {
+            expr = expr.replace(/\s/g, '').replace(/\^/g, '**');
+            return (x) => {
+                try {
+                    return eval(expr);
+                } catch(e) { return NaN; }
+            };
+        }
+        
+        function applyCustom() {
+            const input = document.getElementById('custom-input').value;
+            if (!input) return;
+            customFunc = parseFunction(input);
+            draw();
+        }
+        
+        function clearCustom() {
+            document.getElementById('custom-input').value = '';
+            customFunc = null;
+            draw();
+        }
         
         function resize() {
             canvas.width = canvas.offsetWidth;
@@ -535,18 +571,65 @@
             ctx.fillText('y', ox + 20, 20);
             
             // 一次函数直线
-            ctx.strokeStyle = '#667eea';
+            ctx.strokeStyle = customFunc ? '#e74c3c' : '#667eea';
             ctx.lineWidth = 4;
             ctx.beginPath();
             
-            const x1 = -15;
-            const y1 = k * x1 + b;
-            const x2 = 15;
-            const y2 = k * x2 + b;
-            
-            ctx.moveTo(ox + x1 * scale, oy - y1 * scale);
-            ctx.lineTo(ox + x2 * scale, oy - y2 * scale);
-            ctx.stroke();
+            if (customFunc) {
+                // 绘制自定义函数
+                let first = true;
+                for (let px = 0; px < w; px += 2) {
+                    const x = (px - ox) / scale;
+                    const y = customFunc(x);
+                    if (!isNaN(y) && Math.abs(y) < 100) {
+                        const py = oy - y * scale;
+                        if (first) { ctx.moveTo(px, py); first = false; }
+                        else { ctx.lineTo(px, py); }
+                    }
+                }
+                ctx.stroke();
+            } else {
+                // 绘制标准一次函数
+                const x1 = -15;
+                const y1 = k * x1 + b;
+                const x2 = 15;
+                const y2 = k * x2 + b;
+                
+                ctx.moveTo(ox + x1 * scale, oy - y1 * scale);
+                ctx.lineTo(ox + x2 * scale, oy - y2 * scale);
+                ctx.stroke();
+                
+                // y轴截距点
+                const yIntY = oy - b * scale;
+                ctx.fillStyle = '#e74c3c';
+                ctx.beginPath();
+                ctx.arc(ox, yIntY, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // y截距标签
+                ctx.fillStyle = '#e74c3c';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(`(0, ${b})`, 20, yIntY - 15);
+                
+                // x轴截距点
+                if (k !== 0) {
+                    const xInt = -b / k;
+                    ctx.fillStyle = '#27ae60';
+                    ctx.beginPath();
+                    ctx.arc(ox + xInt * scale, oy, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#27ae60';
+                    ctx.fillText(`(${xInt.toFixed(2)}, 0)`, ox + xInt * scale + 15, oy - 15);
+                }
+            }
             
             // y轴截距点
             const yIntY = oy - b * scale;
@@ -614,6 +697,8 @@
         function setValues(k, b) {
             document.getElementById('k').value = k;
             document.getElementById('b').value = b;
+            customFunc = null;
+            document.getElementById('custom-input').value = '';
             draw();
         }
         
@@ -627,8 +712,8 @@
             setValues(k, b);
         }
         
-        document.getElementById('k').addEventListener('input', draw);
-        document.getElementById('b').addEventListener('input', draw);
+        document.getElementById('k').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
+        document.getElementById('b').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
         
         resize();
     </script>
