@@ -231,20 +231,32 @@
                 <div class="formula">y = <span id="a-val">1</span>x² + <span id="b-val">0</span>x + <span id="c-val">0</span></div>
             </div>
             
+            <!-- 自定义函数输入 -->
+            <div class="control-group" style="background: #e3f2fd; border: 2px solid #667eea;">
+                <label>📝 自定义函数</label>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <span style="font-size: 1.2em;">y =</span>
+                    <input type="text" id="custom-input" placeholder="输入函数，如: x^2+2*x+1 或 sin(x)" style="flex: 1; min-width: 200px; padding: 10px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                    <button class="btn btn-primary" onclick="applyCustom()" style="padding: 10px 20px;">应用</button>
+                    <button class="btn btn-secondary" onclick="clearCustom()" style="padding: 10px 20px;">清除</button>
+                </div>
+                <p style="margin-top: 8px; color: #666; font-size: 0.85em;">支持: + - * / ^ ( ) x 数字，如: x^2-3, 2*x+1, sin(x), cos(x)</p>
+            </div>
+            
             <div class="controls">
                 <div class="control-group">
                     <label>🔵 开口方向 (a)</label>
-                    <input type="range" id="a" min="-5" max="5" step="0.1" value="1">
+                    <input type="range" id="a" min="-5" max="5" step="0.1" value="1" title="分度值: 0.1">
                     <div class="value-display" id="a-display">a = 1</div>
                 </div>
                 <div class="control-group">
                     <label>🟢 对称轴位置 (b)</label>
-                    <input type="range" id="b" min="-10" max="10" step="0.5" value="0">
+                    <input type="range" id="b" min="-10" max="10" step="0.1" value="0">
                     <div class="value-display" id="b-display">b = 0</div>
                 </div>
                 <div class="control-group">
                     <label>🟡 上下平移 (c)</label>
-                    <input type="range" id="c" min="-10" max="10" step="0.5" value="0">
+                    <input type="range" id="c" min="-10" max="10" step="0.1" value="0">
                     <div class="value-display" id="c-display">c = 0</div>
                 </div>
             </div>
@@ -321,6 +333,30 @@
         const canvas = document.getElementById('graph');
         const ctx = canvas.getContext('2d');
         let score = 0;
+        let customFunc = null;
+        
+        // 解析自定义函数
+        function parseFunction(expr) {
+            expr = expr.replace(/\s/g, '').replace(/\^/g, '**');
+            return (x) => {
+                try {
+                    return eval(expr);
+                } catch(e) { return NaN; }
+            };
+        }
+        
+        function applyCustom() {
+            const input = document.getElementById('custom-input').value;
+            if (!input) return;
+            customFunc = parseFunction(input);
+            draw();
+        }
+        
+        function clearCustom() {
+            document.getElementById('custom-input').value = '';
+            customFunc = null;
+            draw();
+        }
         
         // 设置canvas大小
         function resizeCanvas() {
@@ -407,11 +443,25 @@
             ctx.fillText('O', ox - 15, oy + 20);
             
             // 绘制抛物线
-            if (a !== 0) {
-                ctx.strokeStyle = '#667eea';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                
+            ctx.strokeStyle = customFunc ? '#e74c3c' : '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            if (customFunc) {
+                // 绘制自定义函数
+                let first = true;
+                for (let px = 0; px <= w; px += 2) {
+                    const x = (px - ox) / scale;
+                    const y = customFunc(x);
+                    if (!isNaN(y) && Math.abs(y) < 100) {
+                        const py = oy - y * scale;
+                        if (first) { ctx.moveTo(px, py); first = false; }
+                        else { ctx.lineTo(px, py); }
+                    }
+                }
+                ctx.stroke();
+            } else if (a !== 0) {
+                // 绘制标准二次函数
                 for (let px = 0; px <= w; px += 2) {
                     const x = (px - ox) / scale;
                     const y = a * x * x + b * x + c;
@@ -461,6 +511,8 @@
                 ctx.fill();
                 ctx.fillStyle = '#4CAF50';
                 ctx.fillText(`(0, ${c})`, 15, cpy - 10);
+            } else {
+                ctx.stroke();
             }
             
             // 更新信息显示
@@ -497,6 +549,8 @@
             document.getElementById('a').value = a;
             document.getElementById('b').value = b;
             document.getElementById('c').value = c;
+            customFunc = null;
+            document.getElementById('custom-input').value = '';
             draw();
             addScore(10);
             showAchievement('🎯 加载示例成功！+10分');
@@ -507,6 +561,8 @@
             document.getElementById('a').value = 1;
             document.getElementById('b').value = 0;
             document.getElementById('c').value = 0;
+            customFunc = null;
+            document.getElementById('custom-input').value = '';
             draw();
         }
         
@@ -515,6 +571,8 @@
             const a = Math.floor(Math.random() * 5) - 2 || 1;
             const b = Math.floor(Math.random() * 10) - 5;
             const c = Math.floor(Math.random() * 10) - 5;
+            customFunc = null;
+            document.getElementById('custom-input').value = '';
             setExample(a, b, c);
             showAchievement('🎲 随机挑战！观察这个抛物线有什么特点？');
         }
@@ -540,9 +598,9 @@
         }
         
         // 监听滑块变化
-        document.getElementById('a').addEventListener('input', () => { draw(); addScore(1); });
-        document.getElementById('b').addEventListener('input', () => { draw(); addScore(1); });
-        document.getElementById('c').addEventListener('input', () => { draw(); addScore(1); });
+        document.getElementById('a').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); addScore(1); });
+        document.getElementById('b').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); addScore(1); });
+        document.getElementById('c').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); addScore(1); });
         
         // 初始绘制
         draw();
