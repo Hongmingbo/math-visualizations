@@ -293,7 +293,7 @@
                 <button class="btn btn-primary" onclick="setK(-1)">📊 k = -1</button>
                 <button class="btn btn-primary" onclick="setK(2)">📊 k = 2</button>
                 <button class="btn btn-primary" onclick="setK(4)">📊 k = 4</button>
-                <button class="btn btn-primary" onclick="setK(-2)">📊 k = -2</button>
+                <button class="btn btn-secondary" onclick="setK(-2)">📊 k = -2</button>
                 <button class="btn btn-secondary" onclick="randomK()">🎲 随机</button>
                 <button class="btn btn-secondary" onclick="resetK()">🔄 重置</button>
             </div>
@@ -462,7 +462,8 @@
             
             // 绘制反比例函数
             if (k !== 0) {
-                ctx.strokeStyle = '#4facfe';
+                // k>0 用蓝色，k<0 用绿色
+                ctx.strokeStyle = k > 0 ? '#4facfe' : '#27ae60';
                 ctx.lineWidth = 4;
                 
                 // 右支 (x > 0)
