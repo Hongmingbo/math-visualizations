@@ -522,13 +522,17 @@
         // 更新信息面板
         function updateInfo(a, b, c) {
             if (customFunc) {
-                // 自定义函数模式
-                document.getElementById('a-val').textContent = '?';
-                document.getElementById('b-val').textContent = '';
-                document.getElementById('c-val').textContent = '自定义';
-                document.getElementById('a-display').textContent = '自定义';
-                document.getElementById('b-display').textContent = '自定义';
-                document.getElementById('c-display').textContent = '自定义';
+                // 自定义函数模式 - 显示具体函数值
+                document.getElementById('a-val').textContent = 'f';
+                document.getElementById('b-val').textContent = '(x)';
+                document.getElementById('c-val').textContent = '';
+                
+                const f0 = customFunc(0);
+                const f1 = customFunc(1);
+                const f2 = customFunc(2);
+                document.getElementById('a-display').textContent = `f(0)=${isNaN(f0)?'无':f0.toFixed(2)}`;
+                document.getElementById('b-display').textContent = `f(1)=${isNaN(f1)?'无':f1.toFixed(2)}`;
+                document.getElementById('c-display').textContent = `f(2)=${isNaN(f2)?'无':f2.toFixed(2)}`;
                 
                 // 找顶点（通过数值方法找极值）
                 let minY = Infinity, maxY = -Infinity, minX = 0, maxX = 0;
