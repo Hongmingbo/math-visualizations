@@ -564,11 +564,14 @@
         
         function updateInfo(k) {
             if (customFunc) {
-                // 自定义函数模式
-                document.getElementById('formula-k').textContent = '?';
-                document.getElementById('k-display').textContent = '自定义';
-                document.getElementById('info-k').textContent = '-';
-                document.getElementById('info-quadrant').textContent = '自定义';
+                // 自定义函数模式 - 显示具体函数值
+                const f1 = customFunc(1);
+                const f2 = customFunc(2);
+                const fm1 = customFunc(-1);
+                document.getElementById('formula-k').textContent = 'f';
+                document.getElementById('k-display').textContent = `f(1)=${isNaN(f1)?'无':f1.toFixed(2)}`;
+                document.getElementById('info-k').textContent = `${isNaN(f2)?'-':f2.toFixed(1)}`;
+                document.getElementById('info-quadrant').textContent = `f(-1)=${isNaN(fm1)?'无':fm1.toFixed(1)}`;
                 document.getElementById('info-mono').textContent = '未知';
                 return;
             }
