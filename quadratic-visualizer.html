@@ -366,15 +366,11 @@
                 document.getElementById('c-display').textContent = `f(-1)=${customFunc(-1).toFixed(2)}`;
                 
                 if (minVal !== Infinity && maxVal !== -Infinity) {
-                    // 判断是开口向上(有最小值)还是向下(有最大值)
-                    // 在可视范围内，如果最小值绝对值更大，说明开口向下
-                    const isOpeningDown = minVal < 0 && Math.abs(minVal) > Math.abs(maxVal);
-                    const extremeVal = isOpeningDown ? minVal : maxVal;
-                    const extremeX = isOpeningDown ? minX : maxX;
-                    document.getElementById('vertex').textContent = `(${extremeX.toFixed(2)}, ${extremeVal.toFixed(2)})`;
-                    document.getElementById('axis').textContent = `x ≈ ${extremeX.toFixed(2)}`;
-                    document.getElementById('direction').textContent = isOpeningDown ? '向下' : '向上';
-                    document.getElementById('extreme').textContent = `${isOpeningDown ? '最大' : '最小'}值 = ${extremeVal.toFixed(2)}`;
+                    // 显示在可视范围内的最小值和最大值
+                    document.getElementById('vertex').textContent = `最小:(${minX.toFixed(2)}, ${minVal.toFixed(2)}) 最大:(${maxX.toFixed(2)}, ${maxVal.toFixed(2)})`;
+                    document.getElementById('axis').textContent = '-';
+                    document.getElementById('direction').textContent = '自定义函数';
+                    document.getElementById('extreme').textContent = `范围: [${minVal.toFixed(2)}, ${maxVal.toFixed(2)}]`;
                 }
                 return;
             }
