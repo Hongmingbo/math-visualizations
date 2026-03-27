@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>二次函数图像可视化教学</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -30,17 +26,9 @@
             padding: 30px;
             text-align: center;
         }
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        .content {
-            padding: 30px;
-        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.1em; opacity: 0.9; }
+        .content { padding: 30px; }
         .formula-box {
             background: #f8f9fa;
             border-left: 5px solid #667eea;
@@ -103,7 +91,6 @@
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 30px;
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
         }
         canvas {
             width: 100%;
@@ -122,44 +109,9 @@
             padding: 20px;
             border-radius: 15px;
             text-align: center;
-            transition: transform 0.3s;
         }
-        .info-card:hover {
-            transform: translateY(-5px);
-        }
-        .info-card h3 {
-            font-size: 0.9em;
-            opacity: 0.9;
-            margin-bottom: 10px;
-        }
-        .info-card .value {
-            font-size: 1.8em;
-            font-weight: bold;
-        }
-        .explanation {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-        .explanation h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-        .explanation p {
-            line-height: 1.8;
-            color: #555;
-            margin-bottom: 10px;
-        }
-        .explanation ul {
-            margin-left: 20px;
-            color: #555;
-        }
-        .explanation li {
-            margin-bottom: 8px;
-            line-height: 1.6;
-        }
+        .info-card h3 { font-size: 0.9em; opacity: 0.9; margin-bottom: 10px; }
+        .info-card .value { font-size: 1.8em; font-weight: bold; }
         .btn-group {
             display: flex;
             gap: 10px;
@@ -172,8 +124,8 @@
             border-radius: 25px;
             cursor: pointer;
             font-size: 1em;
-            transition: all 0.3s;
             font-weight: bold;
+            transition: all 0.3s;
         }
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -184,45 +136,13 @@
             color: #667eea;
             border: 2px solid #667eea;
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .achievement {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 50px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        .score-board {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 15px 25px;
-            border-radius: 50px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            font-weight: bold;
-            color: #667eea;
-            z-index: 1000;
-        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
-    <div class="score-board">🏆 积分: <span id="score">0</span></div>
-    
     <div class="container">
         <div class="header">
-            <h1>🎯 二次函数图像可视化</h1>
+            <h1>二次函数图像可视化</h1>
             <p>拖动滑块，探索 y = ax² + bx + c 的奥秘</p>
         </div>
         
@@ -231,31 +151,30 @@
                 <div class="formula">y = <span id="a-val">1</span>x² + <span id="b-val">0</span>x + <span id="c-val">0</span></div>
             </div>
             
-            <!-- 自定义函数输入 -->
             <div class="control-group" style="background: #e3f2fd; border: 2px solid #667eea;">
-                <label>📝 自定义函数</label>
+                <label>自定义函数</label>
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                     <span style="font-size: 1.2em;">y =</span>
-                    <input type="text" id="custom-input" placeholder="输入函数，如: x^2+2*x+1 或 sin(x)" style="flex: 1; min-width: 200px; padding: 10px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                    <input type="text" id="custom-input" placeholder="输入函数，如: x^2+2*x+1" style="flex: 1; min-width: 200px; padding: 10px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
                     <button class="btn btn-primary" onclick="applyCustom()" style="padding: 10px 20px;">应用</button>
                     <button class="btn btn-secondary" onclick="clearCustom()" style="padding: 10px 20px;">清除</button>
                 </div>
-                <p style="margin-top: 8px; color: #666; font-size: 0.85em;">支持: + - * / ^ ( ) x 数字，如: x^2-3, 2*x+1, sin(x), cos(x)</p>
+                <p style="margin-top: 8px; color: #666; font-size: 0.85em;">支持: + - * / ^ ( ) x 数字</p>
             </div>
             
             <div class="controls">
                 <div class="control-group">
-                    <label>🔵 开口方向 (a)</label>
-                    <input type="range" id="a" min="-5" max="5" step="0.1" value="1" title="分度值: 0.1">
+                    <label>二次项系数 (a)</label>
+                    <input type="range" id="a" min="-5" max="5" step="0.1" value="1">
                     <div class="value-display" id="a-display">a = 1</div>
                 </div>
                 <div class="control-group">
-                    <label>🟢 对称轴位置 (b)</label>
+                    <label>一次项系数 (b)</label>
                     <input type="range" id="b" min="-10" max="10" step="0.1" value="0">
                     <div class="value-display" id="b-display">b = 0</div>
                 </div>
                 <div class="control-group">
-                    <label>🟡 上下平移 (c)</label>
+                    <label>常数项 (c)</label>
                     <input type="range" id="c" min="-10" max="10" step="0.1" value="0">
                     <div class="value-display" id="c-display">c = 0</div>
                 </div>
@@ -266,83 +185,28 @@
             </div>
             
             <div class="info-panel">
-                <div class="info-card">
-                    <h3>📍 顶点坐标</h3>
-                    <div class="value" id="vertex">(0, 0)</div>
-                </div>
-                <div class="info-card">
-                    <h3>📐 对称轴</h3>
-                    <div class="value" id="axis">x = 0</div>
-                </div>
-                <div class="info-card">
-                    <h3>🔍 开口方向</h3>
-                    <div class="value" id="direction">向上</div>
-                </div>
-                <div class="info-card">
-                    <h3>📊 判别式 Δ</h3>
-                    <div class="value" id="delta">0</div>
-                </div>
+                <div class="info-card"><h3>顶点坐标</h3><div class="value" id="vertex">(0, 0)</div></div>
+                <div class="info-card"><h3>对称轴</h3><div class="value" id="axis">x = 0</div></div>
+                <div class="info-card"><h3>开口方向</h3><div class="value" id="direction">向上</div></div>
+                <div class="info-card"><h3>判别式</h3><div class="value" id="delta">0</div></div>
             </div>
             
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="setExample(1, 0, 0)">y = x²</button>
                 <button class="btn btn-primary" onclick="setExample(-1, 0, 0)">y = -x²</button>
-                <button class="btn btn-primary" onclick="setExample(1, -2, 1)">y = x²-2x+1</button>
-                <button class="btn btn-primary" onclick="setExample(1, 2, -3)">y = x²+2x-3</button>
-                <button class="btn btn-secondary" onclick="randomQuiz()">🎲 随机挑战</button>
-                <button class="btn btn-secondary" onclick="reset()">🔄 重置</button>
+                <button class="btn btn-secondary" onclick="reset()">重置</button>
             </div>
-            
-            <div class="explanation">
-                <h3>📚 知识点讲解</h3>
-                <p><strong>二次函数的一般形式：</strong>y = ax² + bx + c (a ≠ 0)</p>
-                <ul>
-                    <li><strong>a 的作用：</strong>决定开口方向和大小
-                        <ul>
-                            <li>a > 0：开口向上，有最小值</li>
-                            <li>a < 0：开口向下，有最大值</li>
-                            <li>|a| 越大，开口越窄；|a| 越小，开口越宽</li>
-                        </ul>
-                    </li>
-                    <li><strong>b 的作用：</strong>影响对称轴位置
-                        <ul>
-                            <li>对称轴公式：x = -b/(2a)</li>
-                        </ul>
-                    </li>
-                    <li><strong>c 的作用：</strong>决定与y轴交点
-                        <ul>
-                            <li>当 x = 0 时，y = c</li>
-                        </ul>
-                    </li>
-                    <li><strong>顶点坐标：</strong>(-b/2a, (4ac-b²)/4a)</li>
-                    <li><strong>判别式 Δ = b² - 4ac：</strong>
-                        <ul>
-                            <li>Δ > 0：两个不同实根</li>
-                            <li>Δ = 0：一个实根（重根）</li>
-                            <li>Δ < 0：无实根</li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            
-            <div id="achievement-container"></div>
         </div>
     </div>
 
     <script>
         const canvas = document.getElementById('graph');
         const ctx = canvas.getContext('2d');
-        let score = 0;
         let customFunc = null;
         
-        // 解析自定义函数
         function parseFunction(expr) {
             expr = expr.replace(/\s/g, '').replace(/\^/g, '**');
-            return (x) => {
-                try {
-                    return eval(expr);
-                } catch(e) { return NaN; }
-            };
+            return (x) => { try { return eval(expr); } catch(e) { return NaN; } };
         }
         
         function applyCustom() {
@@ -358,7 +222,6 @@
             draw();
         }
         
-        // 设置canvas大小
         function resizeCanvas() {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
@@ -367,7 +230,6 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
         
-        // 获取滑块值
         function getValues() {
             return {
                 a: parseFloat(document.getElementById('a').value),
@@ -376,79 +238,28 @@
             };
         }
         
-        // 绘制坐标系和函数
         function draw() {
             const {a, b, c} = getValues();
-            const w = canvas.width;
-            const h = canvas.height;
-            const scale = 40; // 像素/单位
-            const ox = w / 2;
-            const oy = h / 2;
+            const w = canvas.width, h = canvas.height;
+            const scale = 40, ox = w / 2, oy = h / 2;
             
-            // 清空画布
             ctx.fillStyle = '#fafafa';
             ctx.fillRect(0, 0, w, h);
             
-            // 绘制网格
             ctx.strokeStyle = '#e0e0e0';
             ctx.lineWidth = 1;
-            for (let i = 0; i < w; i += scale) {
-                ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, h);
-                ctx.stroke();
-            }
-            for (let i = 0; i < h; i += scale) {
-                ctx.beginPath();
-                ctx.moveTo(0, i);
-                ctx.lineTo(w, i);
-                ctx.stroke();
-            }
+            for (let i = 0; i < w; i += scale) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+            for (let i = 0; i < h; i += scale) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke(); }
             
-            // 绘制坐标轴
             ctx.strokeStyle = '#333';
             ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(0, oy);
-            ctx.lineTo(w, oy);
-            ctx.moveTo(ox, 0);
-            ctx.lineTo(ox, h);
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
             
-            // 绘制刻度
-            ctx.fillStyle = '#666';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            for (let i = -10; i <= 10; i++) {
-                if (i !== 0) {
-                    ctx.fillText(i, ox + i * scale, oy + 20);
-                    ctx.beginPath();
-                    ctx.moveTo(ox + i * scale, oy - 5);
-                    ctx.lineTo(ox + i * scale, oy + 5);
-                    ctx.stroke();
-                }
-            }
-            ctx.textAlign = 'right';
-            for (let i = -5; i <= 5; i++) {
-                if (i !== 0) {
-                    ctx.fillText(-i, ox - 10, oy + i * scale + 5);
-                    ctx.beginPath();
-                    ctx.moveTo(ox - 5, oy + i * scale);
-                    ctx.lineTo(ox + 5, oy + i * scale);
-                    ctx.stroke();
-                }
-            }
-            
-            // 原点标记
-            ctx.fillText('O', ox - 15, oy + 20);
-            
-            // 绘制抛物线
             ctx.strokeStyle = customFunc ? '#e74c3c' : '#667eea';
             ctx.lineWidth = 3;
             ctx.beginPath();
             
             if (customFunc) {
-                // 绘制自定义函数
                 let first = true;
                 for (let px = 0; px <= w; px += 2) {
                     const x = (px - ox) / scale;
@@ -461,80 +272,29 @@
                 }
                 ctx.stroke();
             } else if (a !== 0) {
-                // 绘制标准二次函数
                 for (let px = 0; px <= w; px += 2) {
                     const x = (px - ox) / scale;
                     const y = a * x * x + b * x + c;
-                    const py = oy - y * scale;
-                    
-                    if (px === 0) {
-                        ctx.moveTo(px, py);
-                    } else {
-                        ctx.lineTo(px, py);
-                    }
+                    if (px === 0) ctx.moveTo(px, oy - y * scale);
+                    else ctx.lineTo(px, oy - y * scale);
                 }
-                ctx.stroke();
-                
-                // 绘制顶点
-                const vx = -b / (2 * a);
-                const vy = a * vx * vx + b * vx + c;
-                const vpx = ox + vx * scale;
-                const vpy = oy - vy * scale;
-                
-                ctx.fillStyle = '#f5576c';
-                ctx.beginPath();
-                ctx.arc(vpx, vpy, 6, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 顶点标签
-                ctx.fillStyle = '#f5576c';
-                ctx.font = 'bold 14px Arial';
-                ctx.textAlign = 'left';
-                ctx.fillText(`顶点(${vx.toFixed(2)}, ${vy.toFixed(2)})`, vpx + 10, vpy - 10);
-                
-                // 绘制对称轴
-                ctx.strokeStyle = '#f5576c';
-                ctx.lineWidth = 1;
-                ctx.setLineDash([5, 5]);
-                ctx.beginPath();
-                ctx.moveTo(vpx, 0);
-                ctx.lineTo(vpx, h);
-                ctx.stroke();
-                ctx.setLineDash([]);
-                
-                // 绘制与y轴交点
-                const cy = c;
-                const cpy = oy - cy * scale;
-                ctx.fillStyle = '#4CAF50';
-                ctx.beginPath();
-                ctx.arc(ox, cpy, 6, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#4CAF50';
-                ctx.fillText(`(0, ${c})`, 15, cpy - 10);
-            } else {
                 ctx.stroke();
             }
             
-            // 更新信息显示
             updateInfo(a, b, c);
         }
         
-        // 更新信息面板
         function updateInfo(a, b, c) {
             if (customFunc) {
-                // 自定义函数模式 - 显示具体函数值
                 document.getElementById('a-val').textContent = 'f';
                 document.getElementById('b-val').textContent = '(x)';
                 document.getElementById('c-val').textContent = '';
                 
-                const f0 = customFunc(0);
-                const f1 = customFunc(1);
-                const f2 = customFunc(2);
+                const f0 = customFunc(0), f1 = customFunc(1), f2 = customFunc(2);
                 document.getElementById('a-display').textContent = `f(0)=${isNaN(f0)?'无':f0.toFixed(2)}`;
                 document.getElementById('b-display').textContent = `f(1)=${isNaN(f1)?'无':f1.toFixed(2)}`;
                 document.getElementById('c-display').textContent = `f(2)=${isNaN(f2)?'无':f2.toFixed(2)}`;
                 
-                // 找顶点（通过数值方法找极值）
                 let minY = Infinity, maxY = -Infinity, minX = 0, maxX = 0;
                 for (let x = -10; x <= 10; x += 0.01) {
                     const y = customFunc(x);
@@ -544,16 +304,14 @@
                     }
                 }
                 const isMin = Math.abs(minY) < Math.abs(maxY);
-                const vx = isMin ? minX : maxX;
-                const vy = isMin ? minY : maxY;
+                const vx = isMin ? minX : maxX, vy = isMin ? minY : maxY;
                 document.getElementById('vertex').textContent = `(${vx.toFixed(2)}, ${vy.toFixed(2)})`;
                 document.getElementById('axis').textContent = `x ≈ ${vx.toFixed(2)}`;
-                document.getElementById('direction').textContent = isMin ? '向上 ↗️' : '向下 ↘️';
+                document.getElementById('direction').textContent = isMin ? '向上' : '向下';
                 document.getElementById('delta').textContent = '-';
                 return;
             }
             
-            // 标准二次函数模式
             document.getElementById('a-val').textContent = a;
             document.getElementById('b-val').textContent = b >= 0 ? '+ ' + b : '- ' + Math.abs(b);
             document.getElementById('c-val').textContent = c >= 0 ? '+ ' + c : '- ' + Math.abs(c);
@@ -562,22 +320,15 @@
             document.getElementById('c-display').textContent = `c = ${c}`;
             
             if (a !== 0) {
-                const vx = -b / (2 * a);
-                const vy = a * vx * vx + b * vx + c;
+                const vx = -b / (2 * a), vy = a * vx * vx + b * vx + c;
                 document.getElementById('vertex').textContent = `(${vx.toFixed(2)}, ${vy.toFixed(2)})`;
                 document.getElementById('axis').textContent = `x = ${vx.toFixed(2)}`;
-                document.getElementById('direction').textContent = a > 0 ? '向上 ↗️' : '向下 ↘️';
-                
+                document.getElementById('direction').textContent = a > 0 ? '向上' : '向下';
                 const delta = b * b - 4 * a * c;
-                let deltaText = delta.toFixed(2);
-                if (delta > 0) deltaText += ' (两实根)';
-                else if (delta === 0) deltaText += ' (一实根)';
-                else deltaText += ' (无实根)';
-                document.getElementById('delta').textContent = deltaText;
+                document.getElementById('delta').textContent = delta.toFixed(2);
             }
         }
         
-        // 设置示例
         function setExample(a, b, c) {
             document.getElementById('a').value = a;
             document.getElementById('b').value = b;
@@ -585,59 +336,17 @@
             customFunc = null;
             document.getElementById('custom-input').value = '';
             draw();
-            addScore(10);
-            showAchievement('🎯 加载示例成功！+10分');
         }
         
-        // 重置
         function reset() {
-            document.getElementById('a').value = 1;
-            document.getElementById('b').value = 0;
-            document.getElementById('c').value = 0;
-            customFunc = null;
-            document.getElementById('custom-input').value = '';
-            draw();
+            setExample(1, 0, 0);
         }
         
-        // 随机挑战
-        function randomQuiz() {
-            const a = Math.floor(Math.random() * 5) - 2 || 1;
-            const b = Math.floor(Math.random() * 10) - 5;
-            const c = Math.floor(Math.random() * 10) - 5;
-            customFunc = null;
-            document.getElementById('custom-input').value = '';
-            setExample(a, b, c);
-            showAchievement('🎲 随机挑战！观察这个抛物线有什么特点？');
-        }
+        document.getElementById('a').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
+        document.getElementById('b').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
+        document.getElementById('c').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
         
-        // 添加积分
-        function addScore(points) {
-            score += points;
-            document.getElementById('score').textContent = score;
-        }
-        
-        // 显示成就
-        function showAchievement(text) {
-            const container = document.getElementById('achievement-container');
-            const achievement = document.createElement('div');
-            achievement.className = 'achievement';
-            achievement.textContent = text;
-            container.innerHTML = '';
-            container.appendChild(achievement);
-            
-            setTimeout(() => {
-                achievement.remove();
-            }, 3000);
-        }
-        
-        // 监听滑块变化
-        document.getElementById('a').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); addScore(1); });
-        document.getElementById('b').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); addScore(1); });
-        document.getElementById('c').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); addScore(1); });
-        
-        // 初始绘制
         draw();
-        showAchievement('🌟 欢迎学习二次函数！拖动滑块开始探索');
     </script>
 </body>
 </html>
