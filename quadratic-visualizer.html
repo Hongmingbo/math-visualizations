@@ -343,8 +343,8 @@
             }
             
             document.getElementById('a-val').textContent = a;
-            document.getElementById('b-val').textContent = b >= 0 ? '+ ' + b : '- ' + Math.abs(b);
-            document.getElementById('c-val').textContent = c >= 0 ? '+ ' + c : '- ' + Math.abs(c);
+            document.getElementById('b-val').textContent = b >= 0 ? (b === 0 ? '' : '+ ') + b : '- ' + Math.abs(b);
+            document.getElementById('c-val').textContent = c >= 0 ? (c === 0 ? '' : '+ ') + c : '- ' + Math.abs(c);
             document.getElementById('a-display').textContent = `a = ${a}`;
             document.getElementById('b-display').textContent = `b = ${b}`;
             document.getElementById('c-display').textContent = `c = ${c}`;
