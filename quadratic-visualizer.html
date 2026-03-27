@@ -255,6 +255,36 @@
             ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
             
+            // 绘制刻度和标签
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            for (let i = -10; i <= 10; i++) {
+                if (i !== 0) {
+                    const x = ox + i * scale;
+                    ctx.fillText(i.toString(), x, oy + 20);
+                    ctx.beginPath();
+                    ctx.moveTo(x, oy - 5);
+                    ctx.lineTo(x, oy + 5);
+                    ctx.stroke();
+                }
+            }
+            ctx.textAlign = 'right';
+            for (let i = -5; i <= 5; i++) {
+                if (i !== 0) {
+                    const y = oy - i * scale;
+                    ctx.fillText(i.toString(), ox - 10, y + 5);
+                    ctx.beginPath();
+                    ctx.moveTo(ox - 5, y);
+                    ctx.lineTo(ox + 5, y);
+                    ctx.stroke();
+                }
+            }
+            // 原点标记
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'right';
+            ctx.fillText('O', ox - 15, oy + 20);
+            
             ctx.strokeStyle = customFunc ? '#e74c3c' : '#667eea';
             ctx.lineWidth = 3;
             ctx.beginPath();
