@@ -273,7 +273,7 @@
                 </div>
                 <div class="data-row">
                     <span class="data-label">半径 (r)</span>
-                    <span class="data-value">150</span>
+                    <span class="data-value">12.0</span>
                 </div>
                 <div class="data-row">
                     <span class="data-label">距离 (d)</span>
@@ -574,7 +574,7 @@
         textD.setAttribute('y', cy + (t2_lineY - cy)/2);
 
         const d = Math.abs(t2_lineY - cy);
-        distEl.textContent = d.toFixed(1);
+        distEl.textContent = (d/10).toFixed(1);
 
         if (d > r + 1) { // 给予一点容差
             statusEl.textContent = '相离';
@@ -587,7 +587,7 @@
             line.setAttribute('y1', t2_lineY);
             line.setAttribute('y2', t2_lineY);
             distLine.setAttribute('y2', t2_lineY);
-            distEl.textContent = r.toFixed(1);
+            distEl.textContent = (r/10).toFixed(1);
             
             statusEl.textContent = '相切';
             statusEl.style.color = '#eab308';
@@ -693,8 +693,8 @@
         const signDir = t3_chordY > cy ? -1 : 1;
         document.getElementById('t3-right-angle').setAttribute('d', `M ${cx} ${t3_chordY + signDir*10} L ${cx + 10} ${t3_chordY + signDir*10} L ${cx + 10} ${t3_chordY}`);
 
-        document.getElementById('t3-am').textContent = dx.toFixed(1);
-        document.getElementById('t3-mb').textContent = dx.toFixed(1);
+        document.getElementById('t3-am').textContent = (dx/10).toFixed(1);
+        document.getElementById('t3-mb').textContent = (dx/10).toFixed(1);
     }
 
     // --- Tab 4: 切线长定理 ---
@@ -810,8 +810,8 @@
 
         // 切线长
         const tangentLen = Math.sqrt(d*d - r*r);
-        document.getElementById('t4-pa').textContent = tangentLen.toFixed(1);
-        document.getElementById('t4-pb').textContent = tangentLen.toFixed(1);
+        document.getElementById('t4-pa').textContent = (tangentLen/10).toFixed(1);
+        document.getElementById('t4-pb').textContent = (tangentLen/10).toFixed(1);
 
         // 半角
         const halfAngleDeg = (Math.asin(r / d) * 180 / Math.PI).toFixed(1);

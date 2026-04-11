@@ -442,7 +442,7 @@
             setAttr('m2-ce', {x1: C.x, y1: C.y, x2: E.x, y2: E.y});
             
             let lenBD = dist(B.x, B.y, D.x, D.y).toFixed(1);
-            setText('m2-lenText', `BD = ${lenBD}   CE = ${lenBD}`);
+            setText('m2-lenText', `BD = ${(dist(B.x, B.y, D.x, D.y)/10).toFixed(1)}   CE = ${(dist(B.x, B.y, D.x, D.y)/10).toFixed(1)}`);
         }
         
         setupDrag('svg-m2', '.draggable', (id, x, y) => {
