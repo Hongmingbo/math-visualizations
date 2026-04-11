@@ -524,7 +524,12 @@
             let midRad = (thetaDeg + 45/2) * Math.PI / 180;
             let pText = {x: A.x + (r+20)*Math.sin(midRad), y: A.y + (r+20)*Math.cos(midRad)};
             setAttr('m3-angle-text', {x: pText.x - 10, y: pText.y + 5});
-            
+
+            let EF = (dist(E.x, E.y, F.x, F.y)/10).toFixed(1);
+            let BE = (dist(B.x, B.y, E.x, E.y)/10).toFixed(1);
+            let DF = (dist(D.x, D.y, F.x, F.y)/10).toFixed(1);
+            setText('m3-eq', `EF = ${EF} = BE(${BE}) + DF(${DF})`);
+
             sliderE.value = xE;
         }
         
