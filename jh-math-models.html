@@ -593,7 +593,7 @@
             
             let lenAP = dist(A.x, A.y, P.x, P.y);
             let lenPB = dist(P.x, P.y, B.x, B.y);
-            let sum = (lenAP + lenPB).toFixed(1);
+            let sum = ((lenAP + lenPB) / 10).toFixed(1);
             
             let isMin = Math.abs(xP - xBest) < 2;
             let color = isMin ? '#ef4444' : '#1e293b';
