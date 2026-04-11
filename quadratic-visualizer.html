@@ -274,7 +274,7 @@
             
             <div class="canvas-container">
                 <canvas id="graph"></canvas>
-                <div class="mouse-coords" id="mouse-coords">x: 0.00, y: 0.00</div>
+                <div class="mouse-coords" id="mouse-coords">鼠标: (0.00, 0.00) | 函数: y=0.00</div>
             </div>
             
             <div class="info-panel">
@@ -339,22 +339,33 @@
         
         function parseFunction(expr) {
             const cleanExpr = expr.replace(/\s/g, '').replace(/\^/g, '**');
-            return (x) => {
-                try {
-                    const keys = Object.getOwnPropertyNames(Math);
-                    const values = keys.map(k => Math[k]);
-                    const f = new Function(...keys, 'x', `return ${cleanExpr};`);
-                    return f(...values, x);
-                } catch(e) { return NaN; }
-            };
+            try {
+                const keys = Object.getOwnPropertyNames(Math);
+                const values = keys.map(k => Math[k]);
+                const f = new Function(...keys, 'x', `return ${cleanExpr};`);
+                // Test the function once to catch syntax errors immediately
+                f(...values, 0);
+                return (x) => {
+                    try {
+                        return f(...values, x);
+                    } catch(e) { return NaN; }
+                };
+            } catch(e) {
+                return null; // Return null if invalid
+            }
         }
         
         function applyCustom() {
             const input = document.getElementById('custom-input').value;
             if (!input) { clearCustom(); return; }
             customExpr = input;
-            customFunc = parseFunction(input);
-            draw();
+            const parsed = parseFunction(input);
+            if (parsed) {
+                customFunc = parsed;
+                draw();
+            } else {
+                alert("函数解析失败，请检查语法！");
+            }
         }
         
         function clearCustom() {
@@ -430,13 +441,15 @@
                 }
             }
             ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
             for (let i = -maxTickY; i <= maxTickY; i++) {
                 if (i !== 0) {
                     const y = oy - i * currentScale;
-                    ctx.fillText(i.toString(), ox - 8, y + 4);
+                    ctx.fillText(i.toString(), ox - 8, y);
                     ctx.beginPath(); ctx.moveTo(ox - 4, y); ctx.lineTo(ox + 4, y); ctx.stroke();
                 }
             }
+            ctx.textBaseline = 'alphabetic';
             ctx.fillStyle = axisColor;
             ctx.fillText('O', ox - 12, oy + 18);
             
@@ -446,15 +459,21 @@
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 let first = true;
+                let prevY = NaN;
                 for (let px = 0; px <= w; px += 1) {
                     const x = (px - ox) / currentScale;
                     const y = customFunc(x);
-                    if (!isNaN(y) && Math.abs(y) < 1000) {
+                    if (!isNaN(y) && Math.abs(y) < 10000) {
                         const py = oy - y * currentScale;
-                        if (py >= -100 && py <= h + 100) {
-                            if (first) { ctx.moveTo(px, py); first = false; }
-                            else { ctx.lineTo(px, py); }
+                        if (!first && Math.abs(y - prevY) > h / currentScale) {
+                            // Likely an asymptote, break line
+                            first = true;
                         }
+                        if (first) { ctx.moveTo(px, py); first = false; }
+                        else { ctx.lineTo(px, py); }
+                        prevY = y;
+                    } else {
+                        first = true;
                     }
                 }
                 ctx.stroke();
@@ -467,31 +486,29 @@
             }
 
             // 绘制主二次函数
-            if (a !== 0 || b !== 0 || c !== 0) {
-                ctx.strokeStyle = quadColor;
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                for (let px = 0; px <= w; px += 1) {
-                    const x = (px - ox) / currentScale;
-                    const y = a * x * x + b * x + c;
-                    const py = oy - y * currentScale;
-                    if (px === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
-                }
-                ctx.stroke();
+            ctx.strokeStyle = quadColor;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let px = 0; px <= w; px += 1) {
+                const x = (px - ox) / currentScale;
+                const y = a * x * x + b * x + c;
+                const py = oy - y * currentScale;
+                if (px === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+            
+            // 顶点标记
+            if (a !== 0) {
+                const vx = -b / (2 * a), vy = a * vx * vx + b * vx + c;
+                const vpx = ox + vx * currentScale, vpy = oy - vy * currentScale;
+                ctx.fillStyle = customColor;
+                ctx.beginPath(); ctx.arc(vpx, vpy, isDraggingVertex ? 8 : 6, 0, Math.PI * 2); ctx.fill();
                 
-                // 顶点标记
-                if (a !== 0) {
-                    const vx = -b / (2 * a), vy = a * vx * vx + b * vx + c;
-                    const vpx = ox + vx * currentScale, vpy = oy - vy * currentScale;
-                    ctx.fillStyle = customColor;
-                    ctx.beginPath(); ctx.arc(vpx, vpy, isDraggingVertex ? 8 : 6, 0, Math.PI * 2); ctx.fill();
-                    
-                    if (isDraggingVertex) {
-                        ctx.strokeStyle = customColor;
-                        ctx.lineWidth = 2;
-                        ctx.beginPath(); ctx.arc(vpx, vpy, 12, 0, Math.PI * 2); ctx.stroke();
-                    }
+                if (isDraggingVertex) {
+                    ctx.strokeStyle = customColor;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.arc(vpx, vpy, 12, 0, Math.PI * 2); ctx.stroke();
                 }
             }
             
@@ -500,9 +517,22 @@
         
         function updateInfo(a, b, c) {
             let formula = 'y = ';
-            if (a !== 0) formula += a + 'x²';
-            if (b !== 0) formula += (b > 0 && a !== 0 ? ' + ' : (b < 0 ? ' - ' : '')) + Math.abs(b) + 'x';
-            if (c !== 0 || (a === 0 && b === 0)) formula += (c > 0 && (a !== 0 || b !== 0) ? ' + ' : (c < 0 ? ' - ' : '')) + Math.abs(c);
+            if (a !== 0) {
+                if (a === 1) formula += 'x²';
+                else if (a === -1) formula += '-x²';
+                else formula += a + 'x²';
+            }
+            if (b !== 0) {
+                let sign = b > 0 ? ' + ' : ' - ';
+                if (a === 0) sign = b > 0 ? '' : '-';
+                let val = Math.abs(b) === 1 ? 'x' : Math.abs(b) + 'x';
+                formula += sign + val;
+            }
+            if (c !== 0 || (a === 0 && b === 0)) {
+                let sign = c > 0 ? ' + ' : ' - ';
+                if (a === 0 && b === 0) sign = c >= 0 ? '' : '-';
+                formula += sign + Math.abs(c);
+            }
             
             document.getElementById('formula-display').textContent = formula;
             document.getElementById('a-display').textContent = `a = ${a}`;
@@ -570,12 +600,14 @@
                 const {a} = getValues();
                 // h = nx, k = ny
                 // b = -2ah
-                // c = k + ah^2
                 let newB = -2 * a * nx;
-                let newC = ny + a * nx * nx;
-                
-                // Limit values to slider bounds
                 newB = Math.max(-10, Math.min(10, newB));
+                
+                // Recalculate effective h (nx) based on the capped newB
+                let effectiveNx = -newB / (2 * a);
+                
+                // c = k + ah^2
+                let newC = ny + a * effectiveNx * effectiveNx;
                 newC = Math.max(-10, Math.min(10, newC));
                 
                 document.getElementById('b').value = newB.toFixed(1);
@@ -601,9 +633,9 @@
             const funcY = a * x * x + b * x + c;
             
             if (!isNaN(funcY) && Math.abs(funcY) < 10000) {
-                document.getElementById('mouse-coords').textContent = `x: ${x}, y: ${funcY.toFixed(2)}`;
+                document.getElementById('mouse-coords').textContent = `鼠标: (${x.toFixed(2)}, ${y.toFixed(2)}) | 函数: y=${funcY.toFixed(2)}`;
             } else {
-                document.getElementById('mouse-coords').textContent = `x: ${x}, y: --`;
+                document.getElementById('mouse-coords').textContent = `鼠标: (${x.toFixed(2)}, ${y.toFixed(2)}) | 函数: y=--`;
             }
         });
         
@@ -616,7 +648,7 @@
         });
         
         canvas.addEventListener('mouseleave', () => {
-            document.getElementById('mouse-coords').textContent = 'x: --, y: --';
+            document.getElementById('mouse-coords').textContent = '鼠标: (--, --) | 函数: y=--';
             if (!isDraggingVertex) canvas.style.cursor = 'crosshair';
         });
         
@@ -628,6 +660,7 @@
         }
         
         function reset() {
+            if (animReq) toggleAnimation();
             setExample(1, 0, 0);
             clearCustom();
         }

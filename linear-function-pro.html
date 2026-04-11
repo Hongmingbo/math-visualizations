@@ -37,7 +37,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: background-color 0.3s, color 0.3s;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
         body {
             font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
@@ -205,6 +205,7 @@
             font-size: 0.9em;
             pointer-events: none;
             opacity: 0.8;
+            z-index: 10;
         }
         canvas {
             width: 100%;
@@ -436,14 +437,20 @@
             <div class="formula-section">
                 <div class="formula-box">
                     <div class="formula">
-                        y₁ = <span class="k" id="formula-k">1</span><span class="x">x</span> 
-                        <span id="formula-sign">+</span> 
-                        <span class="b" id="formula-b">0</span>
+                        <div id="formula-1-container">
+                            y₁ = <span class="k" id="formula-k">1</span><span class="x">x</span> 
+                            <span id="formula-sign">+</span> 
+                            <span class="b" id="formula-b">0</span>
+                        </div>
                         
-                        <div id="formula-2-container" style="display:none; margin-top:15px; border-top:2px solid #ccc; padding-top:15px;">
+                        <div id="formula-2-container" style="display:none; margin-top:15px; border-top:2px solid var(--border-color); padding-top:15px;">
                             y₂ = <span style="color:#f39c12; font-weight:bold;" id="formula-k2">-1</span><span class="x">x</span>
                             <span id="formula-sign2">+</span> 
                             <span style="color:#f39c12; font-weight:bold;" id="formula-b2">2</span>
+                        </div>
+
+                        <div id="formula-custom-container" style="display:none; margin-top:15px; border-top:2px solid var(--border-color); padding-top:15px;">
+                            y₃ = <span style="color:#9b59b6; font-weight:bold;" id="formula-custom-text"></span>
                         </div>
                     </div>
                 </div>
@@ -455,10 +462,10 @@
                 <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <span style="font-size: 1.2em;">y =</span>
                     <input type="text" id="custom-input" placeholder="输入函数，如: 2*x + 3 或 sin(x)" style="flex: 1; min-width: 200px; padding: 12px 20px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 1.1em; background: var(--panel-bg); color: var(--text-color);">
-                    <button class="btn btn-primary" onclick="applyCustom()" style="padding: 12px 30px;">应用</button>
+                    <button class="btn btn-primary" onclick="applyCustom()" style="padding: 12px 30px;">应用 (覆盖显示)</button>
                     <button class="btn btn-secondary" onclick="clearCustom()" style="padding: 12px 30px;">清除</button>
                 </div>
-                <p style="margin-top: 10px; opacity: 0.7; font-size: 0.9em;">支持: + - * / ^ ( ) x 数字，如: 2*x+1, x^2-3, sin(x), cos(x)</p>
+                <p style="margin-top: 10px; opacity: 0.7; font-size: 0.9em;">支持: + - * / ^ ( ) x 数字，如: 2x+1, x^2-3, sin(x), cos(x)</p>
             </div>
             
             <!-- 控制面板 1 -->
@@ -489,17 +496,17 @@
 
             <!-- 控制面板 2 -->
             <div class="controls">
-                <div class="control-card" style="grid-column: 1 / -1; display:flex; align-items:center; gap:20px;">
-                    <h3 style="margin:0;">
+                <div class="control-card" style="grid-column: 1 / -1; display:flex; align-items:center; gap:20px; flex-wrap: wrap;">
+                    <h3 style="margin:0; display: flex; align-items: center;">
                         <span>🟠 第二函数 (y₂)</span>
-                        <div class="switch-container" style="display:inline-flex; margin-left:10px;">
+                        <div class="switch-container" style="margin-left:10px;">
                             <label class="switch">
                                 <input type="checkbox" id="enable-f2" onchange="toggleFunc2()">
                                 <span class="slider-switch"></span>
                             </label>
                         </div>
                     </h3>
-                    <div id="f2-controls" style="display:flex; flex:1; gap:20px; opacity:0.5; pointer-events:none;">
+                    <div id="f2-controls" style="display:flex; flex:1; gap:20px; opacity:0.5; pointer-events:none; min-width: 300px;">
                         <div style="flex:1;">
                             <div class="slider-label"><span>斜率 k₂</span></div>
                             <input type="range" id="k2" min="-5" max="5" step="0.1" value="-1">
@@ -568,8 +575,8 @@
                     <div class="knowledge-item">
                         <h4>🔴 斜率 k 的意义</h4>
                         <ul>
-                            <li><span class="highlight-red">k > 0</span>：直线上升，y 随 x 增大而增大</li>
-                            <li><span class="highlight-red">k < 0</span>：直线下降，y 随 x 增大而减小</li>
+                            <li><span class="highlight-red">k &gt; 0</span>：直线上升，y 随 x 增大而增大</li>
+                            <li><span class="highlight-red">k &lt; 0</span>：直线下降，y 随 x 增大而减小</li>
                             <li><span class="highlight-red">k = 0</span>：水平直线，y 恒定不变</li>
                             <li>|k| 越大，直线越陡峭</li>
                         </ul>
@@ -578,8 +585,8 @@
                         <h4>🟢 截距 b 的意义</h4>
                         <ul>
                             <li>直线与 <span class="highlight-green">y 轴</span> 的交点坐标为 (0, b)</li>
-                            <li><span class="highlight-green">b > 0</span>：交点在 y 轴正半轴</li>
-                            <li><span class="highlight-green">b < 0</span>：交点在 y 轴负半轴</li>
+                            <li><span class="highlight-green">b &gt; 0</span>：交点在 y 轴正半轴</li>
+                            <li><span class="highlight-green">b &lt; 0</span>：交点在 y 轴负半轴</li>
                             <li><span class="highlight-green">b = 0</span>：直线过原点</li>
                         </ul>
                     </div>
@@ -633,6 +640,17 @@
             link.click();
         }
 
+        function stopAnimation(param) {
+            const state = animStates[param];
+            if (state.active) {
+                state.active = false;
+                cancelAnimationFrame(state.req);
+                const btn = document.getElementById(`anim-btn-${param}`);
+                btn.classList.remove('active');
+                btn.innerHTML = '▶ 动画';
+            }
+        }
+
         function toggleAnimation(param) {
             const state = animStates[param];
             const btn = document.getElementById(`anim-btn-${param}`);
@@ -656,7 +674,8 @@
             let max = param === 'k' ? 5 : 10;
             
             val += state.dir;
-            if(val >= max || val <= -max) state.dir *= -1;
+            if(val >= max) { val = max; state.dir = -Math.abs(state.dir); }
+            if(val <= -max) { val = -max; state.dir = Math.abs(state.dir); }
             
             input.value = val.toFixed(1);
             draw();
@@ -676,15 +695,23 @@
 
         // 解析自定义函数
         function parseFunction(expr) {
-            expr = expr.replace(/\s/g, '').replace(/\^/g, '**');
-            return (x) => {
-                try {
-                    const keys = Object.getOwnPropertyNames(Math);
-                    const values = keys.map(k => Math[k]);
-                    const f = new Function(...keys, 'x', `return ${expr};`);
-                    return f(...values, x);
-                } catch(e) { return NaN; }
-            };
+            expr = expr.replace(/\s/g, '')
+                       .replace(/(\d)([a-zA-Z\(])/g, '$1*$2') // 2x -> 2*x
+                       .replace(/([xX])(\d+)/g, '$1**$2')     // x2 -> x**2
+                       .replace(/\^/g, '**');                 // x^2 -> x**2
+            try {
+                const keys = Object.getOwnPropertyNames(Math);
+                const args = keys.concat(['x', `return ${expr};`]);
+                const f = new Function(...args);
+                const values = keys.map(k => Math[k]);
+                f(...values, 1); // 测试运行
+                return (x) => {
+                    try { return f(...values, x); }
+                    catch(e) { return NaN; }
+                };
+            } catch(e) {
+                return (x) => NaN;
+            }
         }
         
         function applyCustom() {
@@ -724,7 +751,6 @@
         }
 
         canvas.addEventListener('mousedown', (e) => {
-            if(customFunc) return;
             const pos = getMousePos(e);
             const { k, b, k2, b2, f2Enabled } = getValues();
             const scale = 35;
@@ -736,7 +762,7 @@
 
             // 检查 b1 截距点
             const distB1 = Math.hypot(mathX - 0, mathY - b);
-            if(distB1 < 0.5) { isDragging = true; dragMode = 'b1'; return; }
+            if(distB1 < 0.5) { isDragging = true; dragMode = 'b1'; stopAnimation('b'); return; }
             
             // 检查 b2 截距点
             if(f2Enabled) {
@@ -744,14 +770,14 @@
                 if(distB2 < 0.5) { isDragging = true; dragMode = 'b2'; return; }
             }
 
-            // 检查 k1 直线
-            const expectedY1 = k * mathX + b;
-            if(Math.abs(mathY - expectedY1) < 0.8) { isDragging = true; dragMode = 'k1'; return; }
+            // 检查 k1 直线 (垂直距离)
+            const distK1 = Math.abs(k * mathX - mathY + b) / Math.sqrt(k * k + 1);
+            if(distK1 < 0.8) { isDragging = true; dragMode = 'k1'; stopAnimation('k'); return; }
 
-            // 检查 k2 直线
+            // 检查 k2 直线 (垂直距离)
             if(f2Enabled) {
-                const expectedY2 = k2 * mathX + b2;
-                if(Math.abs(mathY - expectedY2) < 0.8) { isDragging = true; dragMode = 'k2'; return; }
+                const distK2 = Math.abs(k2 * mathX - mathY + b2) / Math.sqrt(k2 * k2 + 1);
+                if(distK2 < 0.8) { isDragging = true; dragMode = 'k2'; return; }
             }
         });
 
@@ -888,91 +914,59 @@
                 }
             }
 
+            // 多函数叠加显示
+            drawLine(k, b, '#667eea', '#e74c3c');
+            if(f2Enabled) {
+                drawLine(k2, b2, '#f39c12', '#f39c12');
+            }
+
             if (customFunc) {
-                // 绘制自定义函数
-                ctx.strokeStyle = '#e74c3c';
+                // 绘制自定义函数 (紫色叠加)
+                ctx.strokeStyle = '#9b59b6';
                 ctx.lineWidth = 4;
                 ctx.beginPath();
                 let first = true;
-                for (let px = 0; px < w; px += 2) {
+                for (let px = 0; px <= w; px += 2) {
                     const x = (px - ox) / scale;
                     const y = customFunc(x);
-                    if (!isNaN(y) && Math.abs(y) < 100) {
+                    if (!isNaN(y) && Math.abs(y) < 1000) {
                         const py = oy - y * scale;
                         if (first) { ctx.moveTo(px, py); first = false; }
                         else { ctx.lineTo(px, py); }
+                    } else {
+                        first = true;
                     }
                 }
                 ctx.stroke();
-            } else {
-                drawLine(k, b, '#667eea', '#e74c3c');
-                if(f2Enabled) {
-                    drawLine(k2, b2, '#f39c12', '#f39c12');
-                }
             }
             
             updateInfo(k, b, k2, b2, f2Enabled);
         }
         
         function updateInfo(k, b, k2, b2, f2Enabled) {
-            if (customFunc) {
-                document.getElementById('formula-k').textContent = 'f';
-                document.getElementById('formula-sign').textContent = '(x)';
-                document.getElementById('formula-b').textContent = '';
-                
-                const yInt = customFunc(0);
-                const yIntStr = isNaN(yInt) ? '无' : yInt.toFixed(2);
-                document.getElementById('k-display').textContent = `f(0)=${yIntStr}`;
-                
-                const y1 = customFunc(1);
-                const y1Str = isNaN(y1) ? '无' : y1.toFixed(2);
-                document.getElementById('b-display').textContent = `f(1)=${y1Str}`;
-                
-                document.getElementById('y-int').textContent = yIntStr;
-                document.getElementById('y-point').textContent = isNaN(yInt) ? '无' : `(0, ${yIntStr})`;
-                
-                const y2 = customFunc(-1);
-                let slopeInfo = '-';
-                if (!isNaN(y1) && !isNaN(y2)) {
-                    const avgSlope = (y1 - y2) / 2;
-                    if (Math.abs(avgSlope) < 0.1) slopeInfo = '≈0';
-                    else slopeInfo = avgSlope.toFixed(2);
-                }
-                document.getElementById('slope').textContent = slopeInfo;
-                
-                let xInt = null;
-                for (let x = -20; x <= 20; x += 0.01) {
-                    const y = customFunc(x);
-                    const yN = customFunc(x + 0.01);
-                    if (!isNaN(y) && !isNaN(yN) && y * yN < 0) {
-                        xInt = x; break;
-                    }
-                }
-                document.getElementById('x-int').textContent = xInt !== null ? xInt.toFixed(2) : '无';
-                document.getElementById('x-point').textContent = xInt !== null ? `(${xInt.toFixed(2)}, 0)` : '无';
-                
-                let mono = '不确定';
-                if (!isNaN(y1) && !isNaN(y2)) {
-                    if (y1 > y2 + 0.1) mono = '递增 ↗';
-                    else if (y1 < y2 - 0.1) mono = '递减 ↘';
-                    else mono = '平缓 →';
-                }
-                document.getElementById('monotonic').textContent = mono;
-                return;
-            }
-            
+            // y1
             document.getElementById('formula-k').textContent = k;
             document.getElementById('formula-sign').textContent = b >= 0 ? '+' : '-';
             document.getElementById('formula-b').textContent = Math.abs(b);
             document.getElementById('k-display').textContent = `k₁ = ${k}`;
             document.getElementById('b-display').textContent = `b₁ = ${b}`;
 
+            // y2
             if(f2Enabled) {
                 document.getElementById('formula-k2').textContent = k2;
                 document.getElementById('formula-sign2').textContent = b2 >= 0 ? '+' : '-';
                 document.getElementById('formula-b2').textContent = Math.abs(b2);
             }
 
+            // y3 custom overlay
+            if (customFunc) {
+                document.getElementById('formula-custom-container').style.display = 'block';
+                document.getElementById('formula-custom-text').textContent = document.getElementById('custom-input').value;
+            } else {
+                document.getElementById('formula-custom-container').style.display = 'none';
+            }
+
+            // Info panel (Always show y1 info for consistency and performance)
             document.getElementById('slope').textContent = k;
             document.getElementById('y-int').textContent = b;
             document.getElementById('y-point').textContent = `(0, ${b})`;
@@ -994,17 +988,16 @@
         function setValues(k, b) {
             document.getElementById('k').value = k;
             document.getElementById('b').value = b;
-            customFunc = null;
-            document.getElementById('custom-input').value = '';
             draw();
         }
         
         function resetValues() {
             setValues(1, 0);
-            if(animStates.k.active) toggleAnimation('k');
-            if(animStates.b.active) toggleAnimation('b');
+            stopAnimation('k');
+            stopAnimation('b');
             document.getElementById('enable-f2').checked = false;
             toggleFunc2();
+            clearCustom();
         }
         
         function randomValues() {
@@ -1013,10 +1006,10 @@
             setValues(k, b);
         }
         
-        document.getElementById('k').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
-        document.getElementById('b').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
-        document.getElementById('k2').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
-        document.getElementById('b2').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
+        document.getElementById('k').addEventListener('input', () => { stopAnimation('k'); draw(); });
+        document.getElementById('b').addEventListener('input', () => { stopAnimation('b'); draw(); });
+        document.getElementById('k2').addEventListener('input', () => { draw(); });
+        document.getElementById('b2').addEventListener('input', () => { draw(); });
         
         resize();
     </script>

@@ -365,11 +365,14 @@
             <!-- 公式 -->
             <div class="formula-section">
                 <div class="formula-box">
-                    <div class="formula">
+                    <div class="formula" id="main-formula">
                         y₁ = <span class="k" id="formula-k">1</span> / <span class="x">x</span>
-                        <span id="formula-2-container" style="display:none; margin-left:20px; border-left:2px solid #ccc; padding-left:20px;">
+                        <span id="formula-2-container" style="display:none; margin-left:20px; border-left:2px solid var(--border-color); padding-left:20px;">
                             y₂ = <span class="k2" id="formula-k2">2</span> / <span class="x">x</span>
                         </span>
+                    </div>
+                    <div class="formula" id="custom-formula" style="display:none; color: #e74c3c;">
+                        y = <span id="custom-formula-text"></span>
                     </div>
                 </div>
             </div>
@@ -569,14 +572,18 @@
         // 解析自定义函数
         function parseFunction(expr) {
             expr = expr.replace(/\s/g, '').replace(/\^/g, '**');
-            return (x) => {
-                try {
-                    const keys = Object.getOwnPropertyNames(Math);
-                    const values = keys.map(k => Math[k]);
-                    const f = new Function(...keys, 'x', `return ${expr};`);
-                    return f(...values, x);
-                } catch(e) { return NaN; }
-            };
+            try {
+                const keys = Object.getOwnPropertyNames(Math);
+                const values = keys.map(k => Math[k]);
+                const f = new Function(...keys, 'x', `return ${expr};`);
+                return (x) => {
+                    try {
+                        return f(...values, x);
+                    } catch(e) { return NaN; }
+                };
+            } catch(e) {
+                return (x) => NaN;
+            }
         }
         
         function applyCustom() {
@@ -619,6 +626,7 @@
 
         canvas.addEventListener('mousedown', (e) => {
             if(customFunc) return; // 自定义函数不支持拖拽
+            if(isAnimating) toggleAnimation(); // 拖拽时停止动画
             const pos = getMousePos(e);
             const { range, k, k2, f2Enabled } = getValues();
             const scale = Math.min(canvas.width, canvas.height) / (range * 2.2);
@@ -629,21 +637,33 @@
             const mathX = (pos.x - ox) / scale;
             const mathY = (oy - pos.y) / scale;
 
-            if (Math.abs(mathX) < 0.1) return;
+            if (Math.abs(mathX) < 0.1 && Math.abs(mathY) < 0.1) return;
 
-            // 检查离哪条曲线更近
-            const expectedY1 = k / mathX;
-            const expectedY2 = f2Enabled ? (k2 / mathX) : Infinity;
+            // 计算像素级最短距离的近似值
+            const screenDist1 = Math.min(
+                Math.abs(mathY - k / mathX) * scale,
+                Math.abs(mathX - k / mathY) * scale
+            );
+            const screenDist2 = f2Enabled ? Math.min(
+                Math.abs(mathY - k2 / mathX) * scale,
+                Math.abs(mathX - k2 / mathY) * scale
+            ) : Infinity;
 
-            const dist1 = Math.abs(mathY - expectedY1);
-            const dist2 = Math.abs(mathY - expectedY2);
-
-            if (dist1 < 1.5) { // 宽容度
+            let minDist = Infinity;
+            let target = null;
+            
+            if (screenDist1 < 15) { // 15像素宽容度
+                minDist = screenDist1;
+                target = 'k';
+            }
+            if (f2Enabled && screenDist2 < 15 && screenDist2 < minDist) {
+                minDist = screenDist2;
+                target = 'k2';
+            }
+            
+            if (target) {
                 isDragging = true;
-                dragTarget = 'k';
-            } else if (f2Enabled && dist2 < 1.5) {
-                isDragging = true;
-                dragTarget = 'k2';
+                dragTarget = target;
             }
         });
 
@@ -742,9 +762,14 @@
                     ctx.beginPath(); ctx.moveTo(ox - 3, y); ctx.lineTo(ox + 3, y); ctx.stroke();
                 }
             }
-            ctx.fillText('O', ox - 20, oy + 25);
-            ctx.fillText('x', w - 20, oy - 10);
-            ctx.fillText('y', ox + 20, 20);
+            
+            // 坐标轴标签
+            ctx.textAlign = 'right';
+            ctx.fillText('O', ox - 5, oy + 15);
+            ctx.textAlign = 'right';
+            ctx.fillText('x', w - 15, oy - 15);
+            ctx.textAlign = 'left';
+            ctx.fillText('y', ox + 10, 20);
             
             // 绘制函数
             function drawCurve(funcK, color) {
@@ -762,6 +787,8 @@
                         const py = oy - y * scale;
                         if (first) { ctx.moveTo(px, py); first = false; }
                         else { ctx.lineTo(px, py); }
+                    } else {
+                        first = true;
                     }
                 }
                 ctx.stroke();
@@ -776,6 +803,8 @@
                         const py = oy - y * scale;
                         if (first) { ctx.moveTo(px, py); first = false; }
                         else { ctx.lineTo(px, py); }
+                    } else {
+                        first = true;
                     }
                 }
                 ctx.stroke();
@@ -785,23 +814,20 @@
                 // 绘制自定义函数
                 ctx.strokeStyle = '#e74c3c';
                 ctx.lineWidth = 4;
-                for (let side = -1; side <= 1; side += 2) {
-                    ctx.beginPath();
-                    let first = true;
-                    const start = side === 1 ? 0.01 : -0.01;
-                    const end = side === 1 ? range : -range;
-                    const step = side === 1 ? 0.01 : -0.01;
-                    for (let x = start; side === 1 ? x <= end : x >= end; x += step) {
-                        const y = customFunc(x);
-                        if (!isNaN(y) && Math.abs(y) <= range) {
-                            const px = ox + x * scale;
-                            const py = oy - y * scale;
-                            if (first) { ctx.moveTo(px, py); first = false; }
-                            else { ctx.lineTo(px, py); }
-                        }
+                ctx.beginPath();
+                let first = true;
+                for (let x = -range; x <= range; x += 0.01) {
+                    const y = customFunc(x);
+                    if (!isNaN(y) && Math.abs(y) <= range) {
+                        const px = ox + x * scale;
+                        const py = oy - y * scale;
+                        if (first) { ctx.moveTo(px, py); first = false; }
+                        else { ctx.lineTo(px, py); }
+                    } else {
+                        first = true;
                     }
-                    ctx.stroke();
                 }
+                ctx.stroke();
             } else {
                 drawCurve(k, k > 0 ? '#4facfe' : '#27ae60');
                 if (f2Enabled) {
@@ -814,10 +840,13 @@
         
         function updateInfo(k, k2, f2Enabled) {
             if (customFunc) {
+                document.getElementById('main-formula').style.display = 'none';
+                document.getElementById('custom-formula').style.display = 'block';
+                document.getElementById('custom-formula-text').textContent = document.getElementById('custom-input').value;
+
                 const f1 = customFunc(1);
                 const f2 = customFunc(2);
                 const fm1 = customFunc(-1);
-                document.getElementById('formula-k').textContent = 'f';
                 document.getElementById('k-display').textContent = `f(1)=${isNaN(f1)?'无':f1.toFixed(2)}`;
                 document.getElementById('info-k').textContent = `${isNaN(f2)?'-':f2.toFixed(1)}`;
                 document.getElementById('info-quadrant').textContent = `f(-1)=${isNaN(fm1)?'无':fm1.toFixed(1)}`;
@@ -825,6 +854,8 @@
                 return;
             }
             
+            document.getElementById('main-formula').style.display = 'block';
+            document.getElementById('custom-formula').style.display = 'none';
             document.getElementById('formula-k').textContent = k;
             document.getElementById('k-display').textContent = `k₁ = ${k}`;
             
@@ -848,6 +879,7 @@
         }
         
         function setK(k) {
+            if(isAnimating) toggleAnimation();
             document.getElementById('k').value = k;
             customFunc = null;
             document.getElementById('custom-input').value = '';
@@ -856,20 +888,26 @@
         
         function resetK() {
             setK(1);
-            if(isAnimating) toggleAnimation();
             document.getElementById('enable-f2').checked = false;
             toggleFunc2();
         }
         
         function randomK() {
             const k = (Math.floor(Math.random() * 20) - 10) || 1;
-            customFunc = null;
-            document.getElementById('custom-input').value = '';
             setK(k);
         }
         
-        document.getElementById('k').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
-        document.getElementById('k2').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
+        document.getElementById('k').addEventListener('input', () => { 
+            if(isAnimating) toggleAnimation();
+            customFunc = null; 
+            document.getElementById('custom-input').value = ''; 
+            draw(); 
+        });
+        document.getElementById('k2').addEventListener('input', () => { 
+            customFunc = null; 
+            document.getElementById('custom-input').value = ''; 
+            draw(); 
+        });
         document.getElementById('range').addEventListener('input', () => {
             document.getElementById('range-display').textContent = `±${document.getElementById('range').value}`;
             draw();
