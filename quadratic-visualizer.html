@@ -5,40 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>二次函数图像可视化教学</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-color: #f4f7f6;
+            --container-bg: #ffffff;
+            --text-color: #333333;
+            --panel-bg: #f8f9fa;
+            --border-color: #e9ecef;
+            --canvas-border: #667eea;
+            --header-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --header-text: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #ddd;
+            --input-text: #333333;
+            --quad-color: #667eea;
+            --custom-color: #e74c3c;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --panel-bg: #2d2d2d;
+            --border-color: #444444;
+            --canvas-border: #82aaff;
+            --header-bg: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            --header-text: #ffffff;
+            --input-bg: #333333;
+            --input-border: #555555;
+            --input-text: #e0e0e0;
+            --quad-color: #82aaff;
+            --custom-color: #ff5370;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: background-color 0.3s, color 0.3s; }
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-color);
+            color: var(--text-color);
             min-height: 100vh;
             padding: 20px;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
+            background: var(--container-bg);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--header-bg);
+            color: var(--header-text);
             padding: 30px;
             text-align: center;
+            position: relative;
         }
         .header h1 { font-size: 2.5em; margin-bottom: 10px; }
         .header p { font-size: 1.1em; opacity: 0.9; }
+        
+        .header-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
         .content { padding: 30px; }
         .formula-box {
-            background: #f8f9fa;
-            border-left: 5px solid #667eea;
+            background: var(--panel-bg);
+            border-left: 5px solid var(--quad-color);
             padding: 20px;
             margin-bottom: 30px;
             border-radius: 0 10px 10px 0;
         }
         .formula {
             font-size: 1.8em;
-            color: #333;
+            color: var(--text-color);
             text-align: center;
             font-family: 'Times New Roman', serif;
         }
@@ -49,15 +92,15 @@
             margin-bottom: 30px;
         }
         .control-group {
-            background: #f8f9fa;
+            background: var(--panel-bg);
             padding: 20px;
             border-radius: 15px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
         }
         .control-group label {
             display: block;
             font-weight: bold;
-            color: #333;
+            color: var(--text-color);
             margin-bottom: 10px;
             font-size: 1.1em;
         }
@@ -74,20 +117,20 @@
             width: 25px;
             height: 25px;
             border-radius: 50%;
-            background: #667eea;
+            background: var(--quad-color);
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         .value-display {
             text-align: center;
             font-size: 1.5em;
-            color: #667eea;
+            color: var(--quad-color);
             font-weight: bold;
             margin-top: 10px;
         }
         .canvas-container {
-            background: white;
-            border: 3px solid #667eea;
+            background: var(--container-bg);
+            border: 3px solid var(--canvas-border);
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 30px;
@@ -109,6 +152,7 @@
             border-radius: 8px;
             font-size: 0.9em;
             font-family: monospace;
+            pointer-events: none;
         }
         .info-panel {
             display: grid;
@@ -117,7 +161,7 @@
             margin-bottom: 30px;
         }
         .info-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--header-bg);
             color: white;
             padding: 20px;
             border-radius: 15px;
@@ -132,7 +176,7 @@
             margin-bottom: 20px;
         }
         .btn {
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
             border-radius: 25px;
             cursor: pointer;
@@ -141,22 +185,43 @@
             transition: all 0.3s;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--header-bg);
             color: white;
         }
         .btn-secondary {
-            background: #f8f9fa;
-            color: #667eea;
-            border: 2px solid #667eea;
+            background: var(--panel-bg);
+            color: var(--quad-color);
+            border: 2px solid var(--quad-color);
+        }
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
         }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        input[type="text"] {
+            background: var(--input-bg);
+            color: var(--input-text);
+            border: 2px solid var(--input-border);
+        }
+        
+        .hint-text {
+            text-align: center;
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>二次函数图像可视化</h1>
-            <p>拖动滑块，探索 y = ax² + bx + c 的奥秘</p>
+            <p>拖动滑块或在画布上直接拖拽顶点，探索 y = ax² + bx + c 的奥秘</p>
+            <div class="header-controls">
+                <button class="btn btn-secondary" onclick="toggleDarkMode()">🌙 切换深色</button>
+                <button class="btn btn-secondary" onclick="exportScreenshot()">📷 导出截图</button>
+            </div>
         </div>
         
         <div class="content">
@@ -164,15 +229,15 @@
                 <div class="formula" id="formula-display">y = 1x² + 0x + 0</div>
             </div>
             
-            <div class="control-group" style="background: #e3f2fd; border: 2px solid #667eea;">
-                <label>自定义函数</label>
+            <div class="control-group" style="border: 2px solid var(--custom-color); margin-bottom: 20px;">
+                <label>对比函数 (函数 2)</label>
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <span style="font-size: 1.2em;">y =</span>
-                    <input type="text" id="custom-input" placeholder="输入函数，如: x^2+2*x+1" style="flex: 1; min-width: 200px; padding: 10px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
-                    <button class="btn btn-primary" onclick="applyCustom()" style="padding: 10px 20px;">应用</button>
-                    <button class="btn btn-secondary" onclick="clearCustom()" style="padding: 10px 20px;">清除</button>
+                    <span style="font-size: 1.2em; color: var(--custom-color); font-weight: bold;">y =</span>
+                    <input type="text" id="custom-input" placeholder="输入函数，如: x^2+2*x+1 或 sin(x)" style="flex: 1; min-width: 200px; padding: 10px 15px; border-radius: 8px; font-size: 1em;">
+                    <button class="btn btn-primary" onclick="applyCustom()">应用</button>
+                    <button class="btn btn-secondary" onclick="clearCustom()">清除</button>
                 </div>
-                <p style="margin-top: 8px; color: #666; font-size: 0.85em;">支持: + - * / ^ ( ) x 数字</p>
+                <p style="margin-top: 8px; color: #888; font-size: 0.85em;">支持: + - * / ^ ( ) x 数字 (如 2*x^2 - 3)。它将与主二次函数同时显示进行对比。</p>
             </div>
             
             <div class="controls">
@@ -191,12 +256,21 @@
                     <input type="range" id="c" min="-10" max="10" step="0.1" value="0">
                     <div class="value-display" id="c-display">c = 0</div>
                 </div>
-                <div class="control-group" style="background: #fff3e0;">
+                <div class="control-group">
                     <label>坐标分度值</label>
                     <input type="range" id="scale" min="20" max="80" step="5" value="40">
                     <div class="value-display" id="scale-display">每格 = 1</div>
                 </div>
             </div>
+            
+            <div class="btn-group" style="justify-content: center;">
+                <button class="btn btn-primary" onclick="setExample(1, 0, 0)">y = x²</button>
+                <button class="btn btn-primary" onclick="setExample(-1, 0, 0)">y = -x²</button>
+                <button class="btn btn-secondary" onclick="reset()">重置</button>
+                <button class="btn btn-primary" id="anim-btn" onclick="toggleAnimation()">▶ 播放动画 (循环c)</button>
+            </div>
+            
+            <p class="hint-text">💡 提示：将鼠标移动到二次函数顶点处（红点），可以按住左键直接拖拽顶点改变函数！</p>
             
             <div class="canvas-container">
                 <canvas id="graph"></canvas>
@@ -210,11 +284,6 @@
                 <div class="info-card"><h3>极值</h3><div class="value" id="extreme">y = 0</div></div>
             </div>
             
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="setExample(1, 0, 0)">y = x²</button>
-                <button class="btn btn-primary" onclick="setExample(-1, 0, 0)">y = -x²</button>
-                <button class="btn btn-secondary" onclick="reset()">重置</button>
-            </div>
         </div>
     </div>
 
@@ -225,14 +294,64 @@
         let customExpr = '';
         let currentScale = 40;
         
+        // Dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            draw();
+        }
+        
+        // Export Screenshot
+        function exportScreenshot() {
+            const link = document.createElement('a');
+            link.download = 'quadratic-function.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Animation
+        let animReq = null;
+        let animDir = 1;
+        function toggleAnimation() {
+            const btn = document.getElementById('anim-btn');
+            if (animReq) {
+                cancelAnimationFrame(animReq);
+                animReq = null;
+                btn.textContent = '▶ 播放动画 (循环c)';
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-primary');
+            } else {
+                animReq = requestAnimationFrame(animateStep);
+                btn.textContent = '⏸ 停止动画';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-danger');
+            }
+        }
+        function animateStep() {
+            let el = document.getElementById('c');
+            let val = parseFloat(el.value);
+            val += 0.1 * animDir;
+            if (val >= 10) { val = 10; animDir = -1; }
+            if (val <= -10) { val = -10; animDir = 1; }
+            el.value = val.toFixed(1);
+            draw();
+            animReq = requestAnimationFrame(animateStep);
+        }
+        
         function parseFunction(expr) {
             const cleanExpr = expr.replace(/\s/g, '').replace(/\^/g, '**');
-            return (x) => { try { return eval(cleanExpr); } catch(e) { return NaN; } };
+            return (x) => {
+                try {
+                    const keys = Object.getOwnPropertyNames(Math);
+                    const values = keys.map(k => Math[k]);
+                    const f = new Function(...keys, 'x', `return ${cleanExpr};`);
+                    return f(...values, x);
+                } catch(e) { return NaN; }
+            };
         }
         
         function applyCustom() {
             const input = document.getElementById('custom-input').value;
-            if (!input) return;
+            if (!input) { clearCustom(); return; }
             customExpr = input;
             customFunc = parseFunction(input);
             draw();
@@ -271,11 +390,19 @@
             const maxTickX = Math.floor((w/2 - 20) / currentScale);
             const maxTickY = Math.floor((h/2 - 20) / currentScale);
             
-            ctx.fillStyle = '#fafafa';
+            const isDark = document.body.classList.contains('dark-mode');
+            const bgColor = isDark ? '#1e1e1e' : '#ffffff';
+            const gridColor = isDark ? '#444' : '#e0e0e0';
+            const axisColor = isDark ? '#ccc' : '#333';
+            const textColor = isDark ? '#aaa' : '#666';
+            const quadColor = isDark ? '#82aaff' : '#667eea';
+            const customColor = isDark ? '#ff5370' : '#e74c3c';
+            
+            ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, w, h);
             
             // 网格
-            ctx.strokeStyle = '#e0e0e0';
+            ctx.strokeStyle = gridColor;
             ctx.lineWidth = 1;
             for (let i = ox % currentScale; i < w; i += currentScale) {
                 ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
@@ -285,14 +412,14 @@
             }
             
             // 坐标轴
-            ctx.strokeStyle = '#333';
+            ctx.strokeStyle = axisColor;
             ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
             
             // 刻度和标签
-            ctx.fillStyle = '#666';
+            ctx.fillStyle = textColor;
             ctx.font = '11px Arial';
-            ctx.strokeStyle = '#333';
+            ctx.strokeStyle = axisColor;
             ctx.lineWidth = 1;
             ctx.textAlign = 'center';
             for (let i = -maxTickX; i <= maxTickX; i++) {
@@ -310,24 +437,19 @@
                     ctx.beginPath(); ctx.moveTo(ox - 4, y); ctx.lineTo(ox + 4, y); ctx.stroke();
                 }
             }
-            ctx.fillStyle = '#333';
+            ctx.fillStyle = axisColor;
             ctx.fillText('O', ox - 12, oy + 18);
             
-            // 绘制函数
-            ctx.strokeStyle = customFunc ? '#e74c3c' : '#667eea';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            
-            let minVal = Infinity, maxVal = -Infinity, minX = 0, maxX = 0;
-            
+            // 绘制对比函数 (如果有)
             if (customFunc) {
+                ctx.strokeStyle = customColor;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
                 let first = true;
                 for (let px = 0; px <= w; px += 1) {
                     const x = (px - ox) / currentScale;
                     const y = customFunc(x);
                     if (!isNaN(y) && Math.abs(y) < 1000) {
-                        if (y < minVal) { minVal = y; minX = x; }
-                        if (y > maxVal) { maxVal = y; maxX = x; }
                         const py = oy - y * currentScale;
                         if (py >= -100 && py <= h + 100) {
                             if (first) { ctx.moveTo(px, py); first = false; }
@@ -336,12 +458,22 @@
                     }
                 }
                 ctx.stroke();
-            } else if (a !== 0) {
+                
+                // Draw custom function label
+                ctx.fillStyle = customColor;
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(`y = ${customExpr}`, 20, 30);
+            }
+
+            // 绘制主二次函数
+            if (a !== 0 || b !== 0 || c !== 0) {
+                ctx.strokeStyle = quadColor;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
                 for (let px = 0; px <= w; px += 1) {
                     const x = (px - ox) / currentScale;
                     const y = a * x * x + b * x + c;
-                    if (y < minVal) { minVal = y; minX = x; }
-                    if (y > maxVal) { maxVal = y; maxX = x; }
                     const py = oy - y * currentScale;
                     if (px === 0) ctx.moveTo(px, py);
                     else ctx.lineTo(px, py);
@@ -349,39 +481,30 @@
                 ctx.stroke();
                 
                 // 顶点标记
-                const vx = -b / (2 * a), vy = a * vx * vx + b * vx + c;
-                const vpx = ox + vx * currentScale, vpy = oy - vy * currentScale;
-                ctx.fillStyle = '#e74c3c';
-                ctx.beginPath(); ctx.arc(vpx, vpy, 6, 0, Math.PI * 2); ctx.fill();
+                if (a !== 0) {
+                    const vx = -b / (2 * a), vy = a * vx * vx + b * vx + c;
+                    const vpx = ox + vx * currentScale, vpy = oy - vy * currentScale;
+                    ctx.fillStyle = customColor;
+                    ctx.beginPath(); ctx.arc(vpx, vpy, isDraggingVertex ? 8 : 6, 0, Math.PI * 2); ctx.fill();
+                    
+                    if (isDraggingVertex) {
+                        ctx.strokeStyle = customColor;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.arc(vpx, vpy, 12, 0, Math.PI * 2); ctx.stroke();
+                    }
+                }
             }
             
-            updateInfo(a, b, c, minVal, maxVal, minX, maxX);
+            updateInfo(a, b, c);
         }
         
-        function updateInfo(a, b, c, minVal, maxVal, minX, maxX) {
-            if (customFunc) {
-                document.getElementById('formula-display').textContent = 'y = ' + (customExpr || 'f(x)');
-                document.getElementById('a-display').textContent = `f(0)=${customFunc(0).toFixed(2)}`;
-                document.getElementById('b-display').textContent = `f(1)=${customFunc(1).toFixed(2)}`;
-                document.getElementById('c-display').textContent = `f(-1)=${customFunc(-1).toFixed(2)}`;
-                
-                if (minVal !== Infinity && maxVal !== -Infinity) {
-                    // 显示在可视范围内的最小值和最大值
-                    document.getElementById('vertex').textContent = `最小:(${minX.toFixed(2)}, ${minVal.toFixed(2)}) 最大:(${maxX.toFixed(2)}, ${maxVal.toFixed(2)})`;
-                    document.getElementById('axis').textContent = '-';
-                    document.getElementById('direction').textContent = '自定义函数';
-                    document.getElementById('extreme').textContent = `范围: [${minVal.toFixed(2)}, ${maxVal.toFixed(2)}]`;
-                }
-                return;
-            }
-            
-            // 标准二次函数
+        function updateInfo(a, b, c) {
             let formula = 'y = ';
             if (a !== 0) formula += a + 'x²';
             if (b !== 0) formula += (b > 0 && a !== 0 ? ' + ' : (b < 0 ? ' - ' : '')) + Math.abs(b) + 'x';
             if (c !== 0 || (a === 0 && b === 0)) formula += (c > 0 && (a !== 0 || b !== 0) ? ' + ' : (c < 0 ? ' - ' : '')) + Math.abs(c);
-            document.getElementById('formula-display').textContent = formula;
             
+            document.getElementById('formula-display').textContent = formula;
             document.getElementById('a-display').textContent = `a = ${a}`;
             document.getElementById('b-display').textContent = `b = ${b}`;
             document.getElementById('c-display').textContent = `c = ${c}`;
@@ -393,7 +516,6 @@
                 document.getElementById('direction').textContent = a > 0 ? '向上(有最小值)' : '向下(有最大值)';
                 document.getElementById('extreme').textContent = `${a > 0 ? '最小' : '最大'}值 = ${vy.toFixed(2)}`;
             } else if (b !== 0) {
-                // 一次函数 y = bx + c
                 document.getElementById('vertex').textContent = '-';
                 document.getElementById('axis').textContent = '-';
                 document.getElementById('direction').textContent = b > 0 ? '递增' : '递减';
@@ -406,23 +528,77 @@
             }
         }
         
-        // 鼠标坐标跟踪
+        // 交互：拖拽顶点
+        let isDraggingVertex = false;
+        
+        canvas.addEventListener('mousedown', (e) => {
+            const {a, b, c} = getValues();
+            if (a === 0) return;
+            
+            const vx = -b / (2 * a);
+            const vy = a * vx * vx + b * vx + c;
+            
+            const rect = canvas.getBoundingClientRect();
+            const px = e.clientX - rect.left;
+            const py = e.clientY - rect.top;
+            
+            const w = canvas.width, h = canvas.height;
+            const ox = w / 2, oy = h / 2;
+            
+            const vpx = ox + vx * currentScale;
+            const vpy = oy - vy * currentScale;
+            
+            const dist = Math.sqrt((px - vpx)**2 + (py - vpy)**2);
+            if (dist < 20) {
+                isDraggingVertex = true;
+                canvas.style.cursor = 'grabbing';
+                draw();
+            }
+        });
+        
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
             const px = e.clientX - rect.left;
             const py = e.clientY - rect.top;
             const w = canvas.width, h = canvas.height;
             const ox = w / 2, oy = h / 2;
-            const x = ((px - ox) / currentScale).toFixed(2);
-            const y = ((oy - py) / currentScale).toFixed(2);
             
-            let funcY = null;
-            if (customFunc) {
-                funcY = customFunc(parseFloat(x));
+            if (isDraggingVertex) {
+                const nx = (px - ox) / currentScale;
+                const ny = (oy - py) / currentScale;
+                
+                const {a} = getValues();
+                // h = nx, k = ny
+                // b = -2ah
+                // c = k + ah^2
+                let newB = -2 * a * nx;
+                let newC = ny + a * nx * nx;
+                
+                // Limit values to slider bounds
+                newB = Math.max(-10, Math.min(10, newB));
+                newC = Math.max(-10, Math.min(10, newC));
+                
+                document.getElementById('b').value = newB.toFixed(1);
+                document.getElementById('c').value = newC.toFixed(1);
+                
+                draw();
             } else {
                 const {a, b, c} = getValues();
-                funcY = a * x * x + b * x + c;
+                if (a !== 0) {
+                    const vx = -b / (2 * a);
+                    const vy = a * vx * vx + b * vx + c;
+                    const vpx = ox + vx * currentScale;
+                    const vpy = oy - vy * currentScale;
+                    const dist = Math.sqrt((px - vpx)**2 + (py - vpy)**2);
+                    canvas.style.cursor = dist < 20 ? 'grab' : 'crosshair';
+                }
             }
+            
+            const x = parseFloat(((px - ox) / currentScale).toFixed(2));
+            const y = parseFloat(((oy - py) / currentScale).toFixed(2));
+            
+            const {a, b, c} = getValues();
+            const funcY = a * x * x + b * x + c;
             
             if (!isNaN(funcY) && Math.abs(funcY) < 10000) {
                 document.getElementById('mouse-coords').textContent = `x: ${x}, y: ${funcY.toFixed(2)}`;
@@ -431,26 +607,34 @@
             }
         });
         
+        window.addEventListener('mouseup', () => {
+            if (isDraggingVertex) {
+                isDraggingVertex = false;
+                canvas.style.cursor = 'crosshair';
+                draw();
+            }
+        });
+        
         canvas.addEventListener('mouseleave', () => {
             document.getElementById('mouse-coords').textContent = 'x: --, y: --';
+            if (!isDraggingVertex) canvas.style.cursor = 'crosshair';
         });
         
         function setExample(a, b, c) {
             document.getElementById('a').value = a;
             document.getElementById('b').value = b;
             document.getElementById('c').value = c;
-            customFunc = null;
-            document.getElementById('custom-input').value = '';
             draw();
         }
         
         function reset() {
             setExample(1, 0, 0);
+            clearCustom();
         }
         
-        document.getElementById('a').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
-        document.getElementById('b').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
-        document.getElementById('c').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
+        document.getElementById('a').addEventListener('input', draw);
+        document.getElementById('b').addEventListener('input', draw);
+        document.getElementById('c').addEventListener('input', draw);
         document.getElementById('scale').addEventListener('input', draw);
         
         draw();

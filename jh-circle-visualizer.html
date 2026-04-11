@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初中数学圆的性质可视化</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary: #ec4899;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0e7ff 0%, #fce7f3 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 1000px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 1.25rem 1rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background: #f9fafb;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: row;
+            height: 500px;
+        }
+
+        @media (max-width: 768px) {
+            .content-area {
+                flex-direction: column;
+                height: auto;
+            }
+        }
+
+        .visualization {
+            flex: 2;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid var(--border-color);
+            background: #f8fafc;
+            overflow: hidden;
+        }
+
+        .info-panel {
+            flex: 1;
+            padding: 2rem;
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tab-content.active {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .draggable {
+            cursor: grab;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+        }
+
+        .info-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .info-card {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+
+        .info-card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #1e3a8a;
+        }
+
+        .info-card p {
+            font-size: 0.95rem;
+            color: #3b82f6;
+            line-height: 1.5;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .data-label {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .data-value {
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .instruction {
+            margin-top: auto;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .instruction::before {
+            content: 'ℹ️';
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>初中数学：圆的性质可视化</h1>
+        <p>交互式探索圆心角、位置关系、垂径定理与切线长</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab1')">1. 圆心角与圆周角</button>
+        <button class="tab-btn" onclick="switchTab('tab2')">2. 直线与圆的位置关系</button>
+        <button class="tab-btn" onclick="switchTab('tab3')">3. 垂径定理</button>
+        <button class="tab-btn" onclick="switchTab('tab4')">4. 切线长定理</button>
+    </div>
+
+    <div class="content-area">
+        <!-- Tab 1 -->
+        <div id="tab1" class="tab-content active">
+            <div class="visualization">
+                <svg id="svg1" viewBox="0 0 600 500"></svg>
+            </div>
+            <div class="info-panel">
+                <h2 class="info-title">圆心角与圆周角定理</h2>
+                <div class="info-card">
+                    <h3>定理内容</h3>
+                    <p>在同圆或等圆中，同弧或等弧所对的圆周角等于它所对的圆心角的一半。</p>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">圆心角 ∠AOB</span>
+                    <span class="data-value" id="t1-central">--°</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">圆周角 ∠APB</span>
+                    <span class="data-value" id="t1-inscribed">--°</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">比值 (∠AOB / ∠APB)</span>
+                    <span class="data-value">2.0</span>
+                </div>
+                <div class="instruction">拖动圆上的蓝点 P，观察圆周角的变化。</div>
+            </div>
+        </div>
+
+        <!-- Tab 2 -->
+        <div id="tab2" class="tab-content">
+            <div class="visualization">
+                <svg id="svg2" viewBox="0 0 600 500"></svg>
+            </div>
+            <div class="info-panel">
+                <h2 class="info-title">直线与圆的位置关系</h2>
+                <div class="info-card">
+                    <h3>位置关系判断</h3>
+                    <p>设圆的半径为 r，圆心到直线的距离为 d：<br>
+                    • d < r：相交（2个交点）<br>
+                    • d = r：相切（1个交点）<br>
+                    • d > r：相离（无交点）</p>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">半径 (r)</span>
+                    <span class="data-value">150</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">距离 (d)</span>
+                    <span class="data-value" id="t2-distance">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">位置关系</span>
+                    <span class="data-value" id="t2-status">--</span>
+                </div>
+                <div class="instruction">上下拖动红色的直线，观察其与圆的交点及距离变化。</div>
+            </div>
+        </div>
+
+        <!-- Tab 3 -->
+        <div id="tab3" class="tab-content">
+            <div class="visualization">
+                <svg id="svg3" viewBox="0 0 600 500"></svg>
+            </div>
+            <div class="info-panel">
+                <h2 class="info-title">垂径定理</h2>
+                <div class="info-card">
+                    <h3>定理内容</h3>
+                    <p>垂直于弦的直径平分这条弦，并且平分弦所对的两条弧。</p>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">线段 AM 长度</span>
+                    <span class="data-value" id="t3-am">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">线段 MB 长度</span>
+                    <span class="data-value" id="t3-mb">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">∠OMA / ∠OMB</span>
+                    <span class="data-value">90°</span>
+                </div>
+                <div class="instruction">上下拖动绿色的弦 AB，观察垂线如何平分这条弦。</div>
+            </div>
+        </div>
+
+        <!-- Tab 4 -->
+        <div id="tab4" class="tab-content">
+            <div class="visualization">
+                <svg id="svg4" viewBox="0 0 600 500"></svg>
+            </div>
+            <div class="info-panel">
+                <h2 class="info-title">切线长定理</h2>
+                <div class="info-card">
+                    <h3>定理内容</h3>
+                    <p>从圆外一点引圆的两条切线，它们的切线长相等，圆心和这一点的连线平分两条切线的夹角。</p>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">切线长 PA</span>
+                    <span class="data-value" id="t4-pa">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">切线长 PB</span>
+                    <span class="data-value" id="t4-pb">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">∠APO / ∠BPO</span>
+                    <span class="data-value" id="t4-angle">--°</span>
+                </div>
+                <div class="instruction">在圆外拖动紫色的点 P，观察两条切线的长度变化。</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 通用设置 ---
+    const cx = 300, cy = 250, r = 120;
+    
+    // Tab 切换逻辑
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    // --- Tab 1: 圆心角与圆周角 ---
+    const svg1 = document.getElementById('svg1');
+    let t1_pAngle = Math.PI * 1.5; // 点 P 初始角度 (上方)
+    const t1_aAngle = Math.PI * 0.25; // 点 A 固定角度
+    const t1_bAngle = Math.PI * 0.75; // 点 B 固定角度
+    let isDragging1 = false;
+
+    function initTab1() {
+        svg1.innerHTML = `
+            <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#94a3b8" stroke-width="2" />
+            <circle cx="${cx}" cy="${cy}" r="4" fill="#1e293b" />
+            <text x="${cx - 15}" y="${cy + 15}" font-weight="bold">O</text>
+            
+            <path id="t1-central-angle" fill="rgba(236, 72, 153, 0.2)" />
+            <path id="t1-inscribed-angle" fill="rgba(79, 70, 229, 0.2)" />
+            
+            <line id="t1-oa" x1="${cx}" y1="${cy}" stroke="#ec4899" stroke-width="2" />
+            <line id="t1-ob" x1="${cx}" y1="${cy}" stroke="#ec4899" stroke-width="2" />
+            
+            <line id="t1-pa" stroke="#4f46e5" stroke-width="2" />
+            <line id="t1-pb" stroke="#4f46e5" stroke-width="2" />
+            
+            <circle id="t1-a" r="6" fill="#ec4899" />
+            <text id="t1-text-a" font-weight="bold" fill="#ec4899">A</text>
+            <circle id="t1-b" r="6" fill="#ec4899" />
+            <text id="t1-text-b" font-weight="bold" fill="#ec4899">B</text>
+            
+            <circle id="t1-p" r="10" fill="#4f46e5" class="draggable" />
+            <text id="t1-text-p" font-weight="bold" fill="#4f46e5">P</text>
+        `;
+
+        const ax = cx + r * Math.cos(t1_aAngle);
+        const ay = cy + r * Math.sin(t1_aAngle);
+        const bx = cx + r * Math.cos(t1_bAngle);
+        const by = cy + r * Math.sin(t1_bAngle);
+
+        document.getElementById('t1-oa').setAttribute('x2', ax);
+        document.getElementById('t1-oa').setAttribute('y2', ay);
+        document.getElementById('t1-ob').setAttribute('x2', bx);
+        document.getElementById('t1-ob').setAttribute('y2', by);
+        
+        document.getElementById('t1-a').setAttribute('cx', ax);
+        document.getElementById('t1-a').setAttribute('cy', ay);
+        document.getElementById('t1-text-a').setAttribute('x', ax + 10);
+        document.getElementById('t1-text-a').setAttribute('y', ay + 10);
+        
+        document.getElementById('t1-b').setAttribute('cx', bx);
+        document.getElementById('t1-b').setAttribute('cy', by);
+        document.getElementById('t1-text-b').setAttribute('x', bx - 20);
+        document.getElementById('t1-text-b').setAttribute('y', by + 10);
+
+        // 计算圆心角
+        let centralDeg = Math.abs((t1_bAngle - t1_aAngle) * 180 / Math.PI);
+        if (centralDeg > 180) centralDeg = 360 - centralDeg;
+        document.getElementById('t1-central').textContent = centralDeg.toFixed(1) + '°';
+
+        // 画圆心角扇形
+        const arcRadius = 30;
+        const ax_arc = cx + arcRadius * Math.cos(t1_aAngle);
+        const ay_arc = cy + arcRadius * Math.sin(t1_aAngle);
+        const bx_arc = cx + arcRadius * Math.cos(t1_bAngle);
+        const by_arc = cy + arcRadius * Math.sin(t1_bAngle);
+        document.getElementById('t1-central-angle').setAttribute('d', `M ${cx} ${cy} L ${ax_arc} ${ay_arc} A ${arcRadius} ${arcRadius} 0 0 1 ${bx_arc} ${by_arc} Z`);
+
+        updateTab1();
+
+        const pNode = document.getElementById('t1-p');
+        pNode.addEventListener('mousedown', () => isDragging1 = true);
+        pNode.addEventListener('touchstart', (e) => { e.preventDefault(); isDragging1 = true; });
+        
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging1) return;
+            const pt = getMousePos(svg1, e);
+            t1_pAngle = Math.atan2(pt.y - cy, pt.x - cx);
+            updateTab1();
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging1) return;
+            const pt = getTouchPos(svg1, e);
+            t1_pAngle = Math.atan2(pt.y - cy, pt.x - cx);
+            updateTab1();
+        }, {passive: false});
+        
+        window.addEventListener('mouseup', () => isDragging1 = false);
+        window.addEventListener('touchend', () => isDragging1 = false);
+    }
+
+    function updateTab1() {
+        const px = cx + r * Math.cos(t1_pAngle);
+        const py = cy + r * Math.sin(t1_pAngle);
+        
+        const ax = cx + r * Math.cos(t1_aAngle);
+        const ay = cy + r * Math.sin(t1_aAngle);
+        const bx = cx + r * Math.cos(t1_bAngle);
+        const by = cy + r * Math.sin(t1_bAngle);
+
+        document.getElementById('t1-p').setAttribute('cx', px);
+        document.getElementById('t1-p').setAttribute('cy', py);
+        
+        document.getElementById('t1-pa').setAttribute('x1', px);
+        document.getElementById('t1-pa').setAttribute('y1', py);
+        document.getElementById('t1-pa').setAttribute('x2', ax);
+        document.getElementById('t1-pa').setAttribute('y2', ay);
+        
+        document.getElementById('t1-pb').setAttribute('x1', px);
+        document.getElementById('t1-pb').setAttribute('y1', py);
+        document.getElementById('t1-pb').setAttribute('x2', bx);
+        document.getElementById('t1-pb').setAttribute('y2', by);
+        
+        document.getElementById('t1-text-p').setAttribute('x', px + 10);
+        document.getElementById('t1-text-p').setAttribute('y', py - 10);
+
+        // 计算圆周角
+        const angleA = Math.atan2(ay - py, ax - px);
+        const angleB = Math.atan2(by - py, bx - px);
+        let inscribedDeg = Math.abs((angleB - angleA) * 180 / Math.PI);
+        if (inscribedDeg > 180) inscribedDeg = 360 - inscribedDeg;
+        
+        // 由于P在不同弧上，圆周角可能互补，这里简单处理确保显示一半
+        let centralDeg = Math.abs((t1_bAngle - t1_aAngle) * 180 / Math.PI);
+        // 判断 P 是否在优弧还是劣弧
+        let angleP = t1_pAngle;
+        if (angleP < 0) angleP += 2*Math.PI;
+        let angleA_pos = t1_aAngle < 0 ? t1_aAngle + 2*Math.PI : t1_aAngle;
+        let angleB_pos = t1_bAngle < 0 ? t1_bAngle + 2*Math.PI : t1_bAngle;
+        
+        let inMinorArc = false;
+        if (angleA_pos < angleB_pos) {
+            inMinorArc = angleP > angleA_pos && angleP < angleB_pos;
+        } else {
+            inMinorArc = angleP > angleA_pos || angleP < angleB_pos;
+        }
+
+        if (inMinorArc) {
+            inscribedDeg = 180 - centralDeg/2;
+            document.getElementById('t1-inscribed').style.color = 'red';
+            document.getElementById('t1-inscribed').textContent = inscribedDeg.toFixed(1) + '° (劣弧)';
+        } else {
+            inscribedDeg = centralDeg/2;
+            document.getElementById('t1-inscribed').style.color = '';
+            document.getElementById('t1-inscribed').textContent = inscribedDeg.toFixed(1) + '°';
+        }
+
+        // 画圆周角扇形
+        const pArcRadius = 30;
+        const pax_arc = px + pArcRadius * Math.cos(angleA);
+        const pay_arc = py + pArcRadius * Math.sin(angleA);
+        const pbx_arc = px + pArcRadius * Math.cos(angleB);
+        const pby_arc = py + pArcRadius * Math.sin(angleB);
+        let sweepFlag = inMinorArc ? 0 : 1;
+        document.getElementById('t1-inscribed-angle').setAttribute('d', `M ${px} ${py} L ${pax_arc} ${pay_arc} A ${pArcRadius} ${pArcRadius} 0 0 ${sweepFlag} ${pbx_arc} ${pby_arc} Z`);
+    }
+
+    // --- Tab 2: 直线与圆的位置关系 ---
+    const svg2 = document.getElementById('svg2');
+    let t2_lineY = cy + r + 20; // 初始在相离状态
+    let isDragging2 = false;
+
+    function initTab2() {
+        svg2.innerHTML = `
+            <circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(79, 70, 229, 0.1)" stroke="#4f46e5" stroke-width="2" />
+            <circle cx="${cx}" cy="${cy}" r="4" fill="#1e293b" />
+            <text x="${cx - 15}" y="${cy + 15}" font-weight="bold">O</text>
+            
+            <line id="t2-dist-line" x1="${cx}" y1="${cy}" x2="${cx}" y2="${t2_lineY}" stroke="#94a3b8" stroke-dasharray="5,5" stroke-width="2" />
+            <text id="t2-text-d" x="${cx + 10}" y="${cy + (t2_lineY - cy)/2}" fill="#64748b">d</text>
+
+            <g id="t2-line-group" class="draggable">
+                <rect x="0" y="${t2_lineY - 10}" width="600" height="20" fill="transparent" />
+                <line id="t2-line" x1="50" y1="${t2_lineY}" x2="550" y2="${t2_lineY}" stroke="#ef4444" stroke-width="3" />
+            </g>
+
+            <circle id="t2-intersect1" r="5" fill="#ef4444" display="none" />
+            <circle id="t2-intersect2" r="5" fill="#ef4444" display="none" />
+        `;
+
+        updateTab2();
+
+        const lineGroup = document.getElementById('t2-line-group');
+        lineGroup.addEventListener('mousedown', () => isDragging2 = true);
+        lineGroup.addEventListener('touchstart', (e) => { e.preventDefault(); isDragging2 = true; });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging2) return;
+            const pt = getMousePos(svg2, e);
+            t2_lineY = pt.y;
+            updateTab2();
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging2) return;
+            const pt = getTouchPos(svg2, e);
+            t2_lineY = pt.y;
+            updateTab2();
+        }, {passive: false});
+
+        window.addEventListener('mouseup', () => isDragging2 = false);
+        window.addEventListener('touchend', () => isDragging2 = false);
+    }
+
+    function updateTab2() {
+        const lineGroup = document.getElementById('t2-line-group');
+        const line = document.getElementById('t2-line');
+        const distLine = document.getElementById('t2-dist-line');
+        const textD = document.getElementById('t2-text-d');
+        const i1 = document.getElementById('t2-intersect1');
+        const i2 = document.getElementById('t2-intersect2');
+        const statusEl = document.getElementById('t2-status');
+        const distEl = document.getElementById('t2-distance');
+
+        lineGroup.querySelector('rect').setAttribute('y', t2_lineY - 10);
+        line.setAttribute('y1', t2_lineY);
+        line.setAttribute('y2', t2_lineY);
+        
+        distLine.setAttribute('y2', t2_lineY);
+        textD.setAttribute('y', cy + (t2_lineY - cy)/2);
+
+        const d = Math.abs(t2_lineY - cy);
+        distEl.textContent = d.toFixed(1);
+
+        if (d > r + 1) { // 给予一点容差
+            statusEl.textContent = '相离';
+            statusEl.style.color = '#64748b';
+            i1.setAttribute('display', 'none');
+            i2.setAttribute('display', 'none');
+        } else if (d >= r - 1 && d <= r + 1) { // 捕捉到相切
+            t2_lineY = t2_lineY > cy ? cy + r : cy - r; // 吸附
+            lineGroup.querySelector('rect').setAttribute('y', t2_lineY - 10);
+            line.setAttribute('y1', t2_lineY);
+            line.setAttribute('y2', t2_lineY);
+            distLine.setAttribute('y2', t2_lineY);
+            distEl.textContent = r.toFixed(1);
+            
+            statusEl.textContent = '相切';
+            statusEl.style.color = '#eab308';
+            i1.setAttribute('cx', cx);
+            i1.setAttribute('cy', t2_lineY);
+            i1.setAttribute('display', 'block');
+            i2.setAttribute('display', 'none');
+        } else {
+            statusEl.textContent = '相交';
+            statusEl.style.color = '#10b981';
+            const dx = Math.sqrt(r*r - d*d);
+            i1.setAttribute('cx', cx - dx);
+            i1.setAttribute('cy', t2_lineY);
+            i1.setAttribute('display', 'block');
+            i2.setAttribute('cx', cx + dx);
+            i2.setAttribute('cy', t2_lineY);
+            i2.setAttribute('display', 'block');
+        }
+    }
+
+    // --- Tab 3: 垂径定理 ---
+    const svg3 = document.getElementById('svg3');
+    let t3_chordY = cy + 60; // 初始弦的Y坐标
+    let isDragging3 = false;
+
+    function initTab3() {
+        svg3.innerHTML = `
+            <circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(16, 185, 129, 0.05)" stroke="#10b981" stroke-width="2" />
+            <circle cx="${cx}" cy="${cy}" r="4" fill="#1e293b" />
+            <text x="${cx - 15}" y="${cy - 10}" font-weight="bold">O</text>
+            
+            <line id="t3-diameter" x1="${cx}" y1="${cy - r - 20}" x2="${cx}" y2="${cy + r + 20}" stroke="#94a3b8" stroke-dasharray="5,5" stroke-width="2" />
+            
+            <g id="t3-chord-group" class="draggable">
+                <rect id="t3-chord-area" x="100" y="${t3_chordY - 15}" width="400" height="30" fill="transparent" />
+                <line id="t3-chord" stroke="#10b981" stroke-width="4" />
+                <circle id="t3-a" r="6" fill="#10b981" />
+                <text id="t3-text-a" font-weight="bold" fill="#10b981">A</text>
+                <circle id="t3-b" r="6" fill="#10b981" />
+                <text id="t3-text-b" font-weight="bold" fill="#10b981">B</text>
+            </g>
+
+            <circle id="t3-m" r="5" fill="#f59e0b" />
+            <text id="t3-text-m" font-weight="bold" fill="#f59e0b">M</text>
+            
+            <!-- 垂直符号 -->
+            <path id="t3-right-angle" fill="none" stroke="#f59e0b" stroke-width="2" />
+        `;
+
+        updateTab3();
+
+        const chordGroup = document.getElementById('t3-chord-group');
+        chordGroup.addEventListener('mousedown', () => isDragging3 = true);
+        chordGroup.addEventListener('touchstart', (e) => { e.preventDefault(); isDragging3 = true; });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging3) return;
+            const pt = getMousePos(svg3, e);
+            // 限制弦在圆内
+            t3_chordY = Math.max(cy - r + 5, Math.min(cy + r - 5, pt.y));
+            updateTab3();
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging3) return;
+            const pt = getTouchPos(svg3, e);
+            t3_chordY = Math.max(cy - r + 5, Math.min(cy + r - 5, pt.y));
+            updateTab3();
+        }, {passive: false});
+
+        window.addEventListener('mouseup', () => isDragging3 = false);
+        window.addEventListener('touchend', () => isDragging3 = false);
+    }
+
+    function updateTab3() {
+        const d = Math.abs(t3_chordY - cy);
+        const dx = Math.sqrt(r*r - d*d);
+        
+        const ax = cx - dx;
+        const bx = cx + dx;
+
+        document.getElementById('t3-chord-area').setAttribute('y', t3_chordY - 15);
+        document.getElementById('t3-chord').setAttribute('x1', ax);
+        document.getElementById('t3-chord').setAttribute('y1', t3_chordY);
+        document.getElementById('t3-chord').setAttribute('x2', bx);
+        document.getElementById('t3-chord').setAttribute('y2', t3_chordY);
+        
+        document.getElementById('t3-a').setAttribute('cx', ax);
+        document.getElementById('t3-a').setAttribute('cy', t3_chordY);
+        document.getElementById('t3-text-a').setAttribute('x', ax - 20);
+        document.getElementById('t3-text-a').setAttribute('y', t3_chordY + 20);
+
+        document.getElementById('t3-b').setAttribute('cx', bx);
+        document.getElementById('t3-b').setAttribute('cy', t3_chordY);
+        document.getElementById('t3-text-b').setAttribute('x', bx + 10);
+        document.getElementById('t3-text-b').setAttribute('y', t3_chordY + 20);
+
+        document.getElementById('t3-m').setAttribute('cx', cx);
+        document.getElementById('t3-m').setAttribute('cy', t3_chordY);
+        document.getElementById('t3-text-m').setAttribute('x', cx + 10);
+        document.getElementById('t3-text-m').setAttribute('y', t3_chordY + 20);
+
+        // 垂直符号
+        const signDir = t3_chordY > cy ? -1 : 1;
+        document.getElementById('t3-right-angle').setAttribute('d', `M ${cx} ${t3_chordY + signDir*10} L ${cx + 10} ${t3_chordY + signDir*10} L ${cx + 10} ${t3_chordY}`);
+
+        document.getElementById('t3-am').textContent = dx.toFixed(1);
+        document.getElementById('t3-mb').textContent = dx.toFixed(1);
+    }
+
+    // --- Tab 4: 切线长定理 ---
+    const svg4 = document.getElementById('svg4');
+    let t4_px = 100, t4_py = 400; // 外部点 P 初始位置
+    let isDragging4 = false;
+
+    function initTab4() {
+        svg4.innerHTML = `
+            <circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(217, 70, 239, 0.05)" stroke="#d946ef" stroke-width="2" />
+            <circle cx="${cx}" cy="${cy}" r="4" fill="#1e293b" />
+            <text x="${cx + 10}" y="${cy + 5}" font-weight="bold">O</text>
+            
+            <line id="t4-op" x1="${cx}" y1="${cy}" stroke="#94a3b8" stroke-dasharray="5,5" stroke-width="2" />
+            
+            <line id="t4-oa" stroke="#d946ef" stroke-dasharray="4,4" stroke-width="2" />
+            <line id="t4-ob" stroke="#d946ef" stroke-dasharray="4,4" stroke-width="2" />
+            
+            <line id="t4-pa" stroke="#c026d3" stroke-width="3" />
+            <line id="t4-pb" stroke="#c026d3" stroke-width="3" />
+            
+            <circle id="t4-a" r="5" fill="#d946ef" />
+            <text id="t4-text-a" font-weight="bold" fill="#d946ef">A</text>
+            <circle id="t4-b" r="5" fill="#d946ef" />
+            <text id="t4-text-b" font-weight="bold" fill="#d946ef">B</text>
+            
+            <path id="t4-angle-a" fill="none" stroke="#d946ef" stroke-width="2" />
+            <path id="t4-angle-b" fill="none" stroke="#d946ef" stroke-width="2" />
+
+            <circle id="t4-p" r="10" fill="#c026d3" class="draggable" />
+            <text id="t4-text-p" font-weight="bold" fill="#c026d3">P</text>
+        `;
+
+        updateTab4();
+
+        const pNode = document.getElementById('t4-p');
+        pNode.addEventListener('mousedown', () => isDragging4 = true);
+        pNode.addEventListener('touchstart', (e) => { e.preventDefault(); isDragging4 = true; });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging4) return;
+            const pt = getMousePos(svg4, e);
+            // 确保 P 在圆外
+            const d = Math.hypot(pt.x - cx, pt.y - cy);
+            if (d > r + 20) {
+                t4_px = pt.x;
+                t4_py = pt.y;
+                updateTab4();
+            }
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging4) return;
+            const pt = getTouchPos(svg4, e);
+            const d = Math.hypot(pt.x - cx, pt.y - cy);
+            if (d > r + 20) {
+                t4_px = pt.x;
+                t4_py = pt.y;
+                updateTab4();
+            }
+        }, {passive: false});
+
+        window.addEventListener('mouseup', () => isDragging4 = false);
+        window.addEventListener('touchend', () => isDragging4 = false);
+    }
+
+    function updateTab4() {
+        const d = Math.hypot(t4_px - cx, t4_py - cy);
+        const theta = Math.atan2(t4_py - cy, t4_px - cx);
+        const alpha = Math.acos(r / d);
+
+        const ax = cx + r * Math.cos(theta - alpha);
+        const ay = cy + r * Math.sin(theta - alpha);
+        const bx = cx + r * Math.cos(theta + alpha);
+        const by = cy + r * Math.sin(theta + alpha);
+
+        document.getElementById('t4-op').setAttribute('x2', t4_px);
+        document.getElementById('t4-op').setAttribute('y2', t4_py);
+
+        document.getElementById('t4-oa').setAttribute('x1', cx);
+        document.getElementById('t4-oa').setAttribute('y1', cy);
+        document.getElementById('t4-oa').setAttribute('x2', ax);
+        document.getElementById('t4-oa').setAttribute('y2', ay);
+
+        document.getElementById('t4-ob').setAttribute('x1', cx);
+        document.getElementById('t4-ob').setAttribute('y1', cy);
+        document.getElementById('t4-ob').setAttribute('x2', bx);
+        document.getElementById('t4-ob').setAttribute('y2', by);
+
+        document.getElementById('t4-pa').setAttribute('x1', t4_px);
+        document.getElementById('t4-pa').setAttribute('y1', t4_py);
+        document.getElementById('t4-pa').setAttribute('x2', ax);
+        document.getElementById('t4-pa').setAttribute('y2', ay);
+
+        document.getElementById('t4-pb').setAttribute('x1', t4_px);
+        document.getElementById('t4-pb').setAttribute('y1', t4_py);
+        document.getElementById('t4-pb').setAttribute('x2', bx);
+        document.getElementById('t4-pb').setAttribute('y2', by);
+
+        document.getElementById('t4-a').setAttribute('cx', ax);
+        document.getElementById('t4-a').setAttribute('cy', ay);
+        document.getElementById('t4-text-a').setAttribute('x', ax + 10);
+        document.getElementById('t4-text-a').setAttribute('y', ay - 10);
+
+        document.getElementById('t4-b').setAttribute('cx', bx);
+        document.getElementById('t4-b').setAttribute('cy', by);
+        document.getElementById('t4-text-b').setAttribute('x', bx + 10);
+        document.getElementById('t4-text-b').setAttribute('y', by + 20);
+
+        document.getElementById('t4-p').setAttribute('cx', t4_px);
+        document.getElementById('t4-p').setAttribute('cy', t4_py);
+        document.getElementById('t4-text-p').setAttribute('x', t4_px - 25);
+        document.getElementById('t4-text-p').setAttribute('y', t4_py + 5);
+
+        // 切线长
+        const tangentLen = Math.sqrt(d*d - r*r);
+        document.getElementById('t4-pa').textContent = tangentLen.toFixed(1);
+        document.getElementById('t4-pb').textContent = tangentLen.toFixed(1);
+
+        // 半角
+        const halfAngleDeg = (Math.asin(r / d) * 180 / Math.PI).toFixed(1);
+        document.getElementById('t4-angle').textContent = halfAngleDeg + '°';
+    }
+
+    // --- 工具函数 ---
+    function getMousePos(svg, evt) {
+        const CTM = svg.getScreenCTM();
+        return {
+            x: (evt.clientX - CTM.e) / CTM.a,
+            y: (evt.clientY - CTM.f) / CTM.d
+        };
+    }
+    
+    function getTouchPos(svg, evt) {
+        const CTM = svg.getScreenCTM();
+        return {
+            x: (evt.touches[0].clientX - CTM.e) / CTM.a,
+            y: (evt.touches[0].clientY - CTM.f) / CTM.d
+        };
+    }
+
+    // 初始化所有 Tab
+    initTab1();
+    initTab2();
+    initTab3();
+    initTab4();
+</script>
+</body>
+</html>

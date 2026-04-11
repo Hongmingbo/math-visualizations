@@ -5,30 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>反比例函数 y = k/x 可视化教学</title>
     <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --text-color: #333;
+            --panel-bg: white;
+            --card-bg: #f8f9fa;
+            --border-color: #e9ecef;
+            --grid-color: #e8e8e8;
+            --axis-color: #333;
+            --primary-btn: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --header-bg: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --knowledge-bg: #f8f9fa;
+            --formula-bg: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+        }
+        
+        .dark-mode {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --panel-bg: #1e1e1e;
+            --card-bg: #2d2d2d;
+            --border-color: #444;
+            --grid-color: #333;
+            --axis-color: #aaa;
+            --primary-btn: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --header-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --knowledge-bg: #2d2d2d;
+            --formula-bg: linear-gradient(135deg, #2d2d2d 0%, #1e1e1e 100%);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
         }
         body {
             font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: var(--bg-color);
+            color: var(--text-color);
             min-height: 100vh;
             padding: 20px;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
+            background: var(--panel-bg);
             border-radius: 20px;
             box-shadow: 0 25px 80px rgba(0,0,0,0.3);
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: var(--header-bg);
             color: white;
             padding: 40px;
             text-align: center;
+            position: relative;
         }
         .header h1 {
             font-size: 2.8em;
@@ -37,6 +68,26 @@
         .header p {
             font-size: 1.2em;
             opacity: 0.95;
+        }
+        .top-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .top-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            backdrop-filter: blur(5px);
+        }
+        .top-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
         .content {
             padding: 40px;
@@ -49,7 +100,7 @@
         }
         .formula-box {
             display: inline-block;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            background: var(--formula-bg);
             padding: 25px 60px;
             border-radius: 15px;
             border: 3px solid #4facfe;
@@ -58,9 +109,10 @@
         .formula {
             font-size: 2.5em;
             font-family: 'Times New Roman', serif;
-            color: #333;
+            color: var(--text-color);
         }
         .formula .k { color: #e74c3c; font-weight: bold; }
+        .formula .k2 { color: #9b59b6; font-weight: bold; }
         .formula .x { color: #3498db; }
         
         /* 控制面板 */
@@ -71,10 +123,10 @@
             margin-bottom: 40px;
         }
         .control-card {
-            background: #f8f9fa;
+            background: var(--card-bg);
             padding: 30px;
             border-radius: 20px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
             transition: all 0.3s;
         }
         .control-card:hover {
@@ -82,12 +134,12 @@
             box-shadow: 0 10px 30px rgba(79, 172, 254, 0.15);
         }
         .control-card h3 {
-            color: #333;
+            color: var(--text-color);
             margin-bottom: 20px;
             font-size: 1.3em;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
         }
         .slider-container {
             margin-bottom: 15px;
@@ -105,7 +157,7 @@
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: var(--primary-btn);
             cursor: pointer;
             box-shadow: 0 3px 10px rgba(0,0,0,0.3);
         }
@@ -116,25 +168,42 @@
             color: #4facfe;
             margin-top: 15px;
             padding: 10px;
-            background: white;
+            background: var(--panel-bg);
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         /* 画布 */
         .canvas-wrapper {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            background: var(--formula-bg);
             padding: 30px;
             border-radius: 20px;
             margin-bottom: 40px;
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        .canvas-tip {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            pointer-events: none;
+            opacity: 0.8;
         }
         canvas {
             width: 100%;
             height: 500px;
-            background: white;
+            background: var(--panel-bg);
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            cursor: grab;
+        }
+        canvas:active {
+            cursor: grabbing;
         }
         
         /* 信息面板 */
@@ -145,7 +214,7 @@
             margin-bottom: 40px;
         }
         .info-card {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: var(--primary-btn);
             color: white;
             padding: 25px;
             border-radius: 15px;
@@ -179,13 +248,20 @@
             transition: all 0.3s;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: var(--primary-btn);
             color: white;
         }
         .btn-secondary {
-            background: white;
+            background: var(--panel-bg);
             color: #4facfe;
             border: 2px solid #4facfe;
+        }
+        .btn-animation {
+            background: #f39c12;
+            color: white;
+        }
+        .btn-animation.active {
+            background: #e74c3c;
         }
         .btn:hover {
             transform: translateY(-3px);
@@ -194,7 +270,7 @@
         
         /* 知识点 */
         .knowledge {
-            background: #f8f9fa;
+            background: var(--knowledge-bg);
             padding: 35px;
             border-radius: 20px;
             border-left: 5px solid #4facfe;
@@ -210,26 +286,77 @@
             gap: 25px;
         }
         .knowledge-item {
-            background: white;
+            background: var(--panel-bg);
             padding: 25px;
             border-radius: 15px;
             box-shadow: 0 3px 15px rgba(0,0,0,0.08);
         }
         .knowledge-item h4 {
-            color: #333;
+            color: var(--text-color);
             margin-bottom: 15px;
             font-size: 1.2em;
         }
         .knowledge-item ul {
             margin-left: 20px;
-            color: #555;
+            color: var(--text-color);
             line-height: 1.8;
+            opacity: 0.8;
+        }
+        
+        /* 第二函数复选框样式 */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider-switch {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider-switch:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider-switch {
+            background-color: #9b59b6;
+        }
+        input:checked + .slider-switch:before {
+            transform: translateX(20px);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <div class="top-controls">
+                <button class="top-btn" onclick="toggleDarkMode()">🌓 暗黑模式</button>
+                <button class="top-btn" onclick="exportScreenshot()">📸 导出截图</button>
+            </div>
             <h1>📉 反比例函数可视化</h1>
             <p>探索 y = k/x 的双曲线之美</p>
         </div>
@@ -239,52 +366,77 @@
             <div class="formula-section">
                 <div class="formula-box">
                     <div class="formula">
-                        y = <span class="k" id="formula-k">1</span> / <span class="x">x</span>
+                        y₁ = <span class="k" id="formula-k">1</span> / <span class="x">x</span>
+                        <span id="formula-2-container" style="display:none; margin-left:20px; border-left:2px solid #ccc; padding-left:20px;">
+                            y₂ = <span class="k2" id="formula-k2">2</span> / <span class="x">x</span>
+                        </span>
                     </div>
                 </div>
             </div>
             
             <!-- 自定义函数输入 -->
             <div class="controls">
-                <div class="control-card" style="background: #e3f2fd; border: 2px solid #4facfe;">
+                <div class="control-card" style="border: 2px solid #4facfe;">
                     <h3>📝 自定义函数</h3>
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <span style="font-size: 1.2em;">y =</span>
-                        <input type="text" id="custom-input" placeholder="输入函数，如: 1/x+2 或 sin(x)/x" style="flex: 1; min-width: 200px; padding: 10px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
-                        <button onclick="applyCustom()" style="padding: 10px 20px; border: none; border-radius: 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; cursor: pointer;">应用</button>
-                        <button onclick="clearCustom()" style="padding: 10px 20px; border: 2px solid #4facfe; border-radius: 20px; background: white; color: #4facfe; cursor: pointer;">清除</button>
+                        <input type="text" id="custom-input" placeholder="输入函数，如: 1/x+2 或 sin(x)/x" style="flex: 1; min-width: 200px; padding: 10px 15px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1em; background: var(--panel-bg); color: var(--text-color);">
+                        <button class="btn btn-primary" onclick="applyCustom()" style="padding: 10px 20px;">应用</button>
+                        <button class="btn btn-secondary" onclick="clearCustom()" style="padding: 10px 20px;">清除</button>
                     </div>
-                    <p style="margin-top: 8px; color: #666; font-size: 0.85em;">支持: + - * / ^ ( ) x 数字，如: 1/x, 2/x+1, sin(x)/x</p>
+                    <p style="margin-top: 8px; opacity: 0.7; font-size: 0.85em;">支持: + - * / ^ ( ) x 数字，如: 1/x, 2/x+1, sin(x)/x</p>
                 </div>
             </div>
             
             <!-- 控制面板 -->
             <div class="controls">
                 <div class="control-card">
-                    <h3>🔴 比例系数 k</h3>
+                    <h3>
+                        <span>🔴 比例系数 k₁</span>
+                        <button class="btn btn-animation" id="anim-btn" onclick="toggleAnimation('k')" style="padding: 5px 15px; font-size: 0.8em;">▶ 动画</button>
+                    </h3>
                     <div class="slider-container">
                         <input type="range" id="k" min="-10" max="10" step="0.1" value="1">
                     </div>
-                    <div class="value-display" id="k-display">k = 1</div>
+                    <div class="value-display" id="k-display">k₁ = 1</div>
                 </div>
+                
+                <div class="control-card">
+                    <h3>
+                        <span>🟣 第二函数 k₂</span>
+                        <div class="switch-container">
+                            <span style="font-size: 0.7em;">启用</span>
+                            <label class="switch">
+                                <input type="checkbox" id="enable-f2" onchange="toggleFunc2()">
+                                <span class="slider-switch"></span>
+                            </label>
+                        </div>
+                    </h3>
+                    <div class="slider-container" id="k2-container" style="opacity: 0.5; pointer-events: none;">
+                        <input type="range" id="k2" min="-10" max="10" step="0.1" value="-2">
+                    </div>
+                    <div class="value-display" id="k2-display" style="color: #9b59b6;">k₂ = -2</div>
+                </div>
+
                 <div class="control-card">
                     <h3>🔵 显示范围</h3>
                     <div class="slider-container">
                         <input type="range" id="range" min="5" max="20" step="1" value="10">
                     </div>
-                    <div class="value-display" id="range-display">±10</div>
+                    <div class="value-display" id="range-display" style="color: #3498db;">±10</div>
                 </div>
             </div>
             
             <!-- 画布 -->
             <div class="canvas-wrapper">
+                <div class="canvas-tip">💡 提示：可直接在画布上拖拽曲线修改 k 值</div>
                 <canvas id="graph"></canvas>
             </div>
             
             <!-- 信息面板 -->
             <div class="info-grid">
                 <div class="info-card">
-                    <h4>🔴 k 值</h4>
+                    <h4>🔴 k₁ 值</h4>
                     <div class="value" id="info-k">1</div>
                 </div>
                 <div class="info-card">
@@ -361,13 +513,68 @@
         const canvas = document.getElementById('graph');
         const ctx = canvas.getContext('2d');
         let customFunc = null;
+        let isDarkMode = false;
+        let isAnimating = false;
+        let animReq = null;
+        let animDir = 0.1;
+        let isDragging = false;
+        let dragTarget = null; // 'k1' or 'k2'
         
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            if(isDarkMode) document.body.classList.add('dark-mode');
+            else document.body.classList.remove('dark-mode');
+            draw();
+        }
+
+        function exportScreenshot() {
+            const link = document.createElement('a');
+            link.download = 'inverse-function-graph.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function toggleAnimation(target) {
+            const btn = document.getElementById('anim-btn');
+            isAnimating = !isAnimating;
+            if(isAnimating) {
+                btn.classList.add('active');
+                btn.innerHTML = '⏸ 停止';
+                animate();
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '▶ 动画';
+                cancelAnimationFrame(animReq);
+            }
+        }
+
+        function animate() {
+            let kInput = document.getElementById('k');
+            let val = parseFloat(kInput.value);
+            val += animDir;
+            if(val >= 10 || val <= -10) animDir *= -1;
+            kInput.value = val.toFixed(1);
+            draw();
+            if(isAnimating) animReq = requestAnimationFrame(animate);
+        }
+        
+        function toggleFunc2() {
+            const enabled = document.getElementById('enable-f2').checked;
+            document.getElementById('k2-container').style.opacity = enabled ? '1' : '0.5';
+            document.getElementById('k2-container').style.pointerEvents = enabled ? 'auto' : 'none';
+            document.getElementById('formula-2-container').style.display = enabled ? 'inline' : 'none';
+            draw();
+        }
+
         // 解析自定义函数
         function parseFunction(expr) {
             expr = expr.replace(/\s/g, '').replace(/\^/g, '**');
             return (x) => {
                 try {
-                    return eval(expr);
+                    const keys = Object.getOwnPropertyNames(Math);
+                    const values = keys.map(k => Math[k]);
+                    const f = new Function(...keys, 'x', `return ${expr};`);
+                    return f(...values, x);
                 } catch(e) { return NaN; }
             };
         }
@@ -395,12 +602,75 @@
         function getValues() {
             return {
                 k: parseFloat(document.getElementById('k').value),
+                k2: parseFloat(document.getElementById('k2').value),
+                f2Enabled: document.getElementById('enable-f2').checked,
                 range: parseFloat(document.getElementById('range').value)
             };
         }
+
+        // Canvas 拖拽交互
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            if(customFunc) return; // 自定义函数不支持拖拽
+            const pos = getMousePos(e);
+            const { range, k, k2, f2Enabled } = getValues();
+            const scale = Math.min(canvas.width, canvas.height) / (range * 2.2);
+            const ox = canvas.width / 2;
+            const oy = canvas.height / 2;
+            
+            // 转换为数学坐标
+            const mathX = (pos.x - ox) / scale;
+            const mathY = (oy - pos.y) / scale;
+
+            if (Math.abs(mathX) < 0.1) return;
+
+            // 检查离哪条曲线更近
+            const expectedY1 = k / mathX;
+            const expectedY2 = f2Enabled ? (k2 / mathX) : Infinity;
+
+            const dist1 = Math.abs(mathY - expectedY1);
+            const dist2 = Math.abs(mathY - expectedY2);
+
+            if (dist1 < 1.5) { // 宽容度
+                isDragging = true;
+                dragTarget = 'k';
+            } else if (f2Enabled && dist2 < 1.5) {
+                isDragging = true;
+                dragTarget = 'k2';
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if(!isDragging) return;
+            const pos = getMousePos(e);
+            const { range } = getValues();
+            const scale = Math.min(canvas.width, canvas.height) / (range * 2.2);
+            const ox = canvas.width / 2;
+            const oy = canvas.height / 2;
+            
+            const mathX = (pos.x - ox) / scale;
+            const mathY = (oy - pos.y) / scale;
+
+            if(Math.abs(mathX) > 0.05) {
+                let newK = mathX * mathY;
+                newK = Math.max(-10, Math.min(10, newK)); // 限制范围
+                document.getElementById(dragTarget).value = newK.toFixed(1);
+                draw();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => { isDragging = false; dragTarget = null; });
+        canvas.addEventListener('mouseleave', () => { isDragging = false; dragTarget = null; });
         
         function draw() {
-            const {k, range} = getValues();
+            const {k, k2, f2Enabled, range} = getValues();
             const w = canvas.width;
             const h = canvas.height;
             const scale = Math.min(w, h) / (range * 2.2);
@@ -408,57 +678,41 @@
             const oy = h / 2;
             
             // 背景
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = isDarkMode ? '#1e1e1e' : '#ffffff';
             ctx.fillRect(0, 0, w, h);
             
             // 网格
-            ctx.strokeStyle = '#e8e8e8';
+            ctx.strokeStyle = isDarkMode ? '#333' : '#e8e8e8';
             ctx.lineWidth = 1;
             for (let i = ox % scale; i < w; i += scale) {
-                ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, h);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
             }
             for (let i = oy % scale; i < h; i += scale) {
-                ctx.beginPath();
-                ctx.moveTo(0, i);
-                ctx.lineTo(w, i);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke();
             }
             
             // 坐标轴
-            ctx.strokeStyle = '#333';
+            ctx.strokeStyle = isDarkMode ? '#aaa' : '#333';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(0, oy);
-            ctx.lineTo(w, oy);
-            ctx.moveTo(ox, 0);
-            ctx.lineTo(ox, h);
+            ctx.moveTo(0, oy); ctx.lineTo(w, oy);
+            ctx.moveTo(ox, 0); ctx.lineTo(ox, h);
             ctx.stroke();
             
             // 箭头
-            ctx.fillStyle = '#333';
+            ctx.fillStyle = isDarkMode ? '#aaa' : '#333';
             ctx.beginPath();
-            ctx.moveTo(w - 10, oy - 5);
-            ctx.lineTo(w, oy);
-            ctx.lineTo(w - 10, oy + 5);
-            ctx.fill();
+            ctx.moveTo(w - 10, oy - 5); ctx.lineTo(w, oy); ctx.lineTo(w - 10, oy + 5); ctx.fill();
             ctx.beginPath();
-            ctx.moveTo(ox - 5, 10);
-            ctx.lineTo(ox, 0);
-            ctx.lineTo(ox + 5, 10);
-            ctx.fill();
+            ctx.moveTo(ox - 5, 10); ctx.lineTo(ox, 0); ctx.lineTo(ox + 5, 10); ctx.fill();
             
             // 渐近线（虚线）
             ctx.strokeStyle = '#e74c3c';
             ctx.lineWidth = 2;
             ctx.setLineDash([8, 4]);
             ctx.beginPath();
-            ctx.moveTo(ox, 0);
-            ctx.lineTo(ox, h);
-            ctx.moveTo(0, oy);
-            ctx.lineTo(w, oy);
+            ctx.moveTo(ox, 0); ctx.lineTo(ox, h);
+            ctx.moveTo(0, oy); ctx.lineTo(w, oy);
             ctx.stroke();
             ctx.setLineDash([]);
             
@@ -470,17 +724,14 @@
             ctx.fillText('x = 0 (渐近线)', ox + 10, h - 20);
             
             // 刻度
-            ctx.fillStyle = '#666';
+            ctx.fillStyle = isDarkMode ? '#888' : '#666';
             ctx.font = '12px Arial';
             ctx.textAlign = 'center';
             for (let i = -range; i <= range; i++) {
                 if (i !== 0) {
                     const x = ox + i * scale;
                     ctx.fillText(i, x, oy + 25);
-                    ctx.beginPath();
-                    ctx.moveTo(x, oy - 3);
-                    ctx.lineTo(x, oy + 3);
-                    ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(x, oy - 3); ctx.lineTo(x, oy + 3); ctx.stroke();
                 }
             }
             ctx.textAlign = 'right';
@@ -488,22 +739,52 @@
                 if (i !== 0) {
                     const y = oy - i * scale;
                     ctx.fillText(i, ox - 15, y + 5);
-                    ctx.beginPath();
-                    ctx.moveTo(ox - 3, y);
-                    ctx.lineTo(ox + 3, y);
-                    ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(ox - 3, y); ctx.lineTo(ox + 3, y); ctx.stroke();
                 }
             }
             ctx.fillText('O', ox - 20, oy + 25);
             ctx.fillText('x', w - 20, oy - 10);
             ctx.fillText('y', ox + 20, 20);
             
-            // 绘制反比例函数
-            ctx.strokeStyle = customFunc ? '#e74c3c' : (k > 0 ? '#4facfe' : '#27ae60');
-            ctx.lineWidth = 4;
-            
+            // 绘制函数
+            function drawCurve(funcK, color) {
+                if (funcK === 0) return;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 4;
+                
+                // 右支 (x > 0)
+                ctx.beginPath();
+                let first = true;
+                for (let x = 0.01; x <= range; x += 0.01) {
+                    const y = funcK / x;
+                    if (Math.abs(y) <= range) {
+                        const px = ox + x * scale;
+                        const py = oy - y * scale;
+                        if (first) { ctx.moveTo(px, py); first = false; }
+                        else { ctx.lineTo(px, py); }
+                    }
+                }
+                ctx.stroke();
+                
+                // 左支 (x < 0)
+                ctx.beginPath();
+                first = true;
+                for (let x = -0.01; x >= -range; x -= 0.01) {
+                    const y = funcK / x;
+                    if (Math.abs(y) <= range) {
+                        const px = ox + x * scale;
+                        const py = oy - y * scale;
+                        if (first) { ctx.moveTo(px, py); first = false; }
+                        else { ctx.lineTo(px, py); }
+                    }
+                }
+                ctx.stroke();
+            }
+
             if (customFunc) {
                 // 绘制自定义函数
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 4;
                 for (let side = -1; side <= 1; side += 2) {
                     ctx.beginPath();
                     let first = true;
@@ -521,50 +802,18 @@
                     }
                     ctx.stroke();
                 }
-            } else if (k !== 0) {
-                // 右支 (x > 0)
-                ctx.beginPath();
-                let first = true;
-                for (let x = 0.01; x <= range; x += 0.01) {
-                    const y = k / x;
-                    if (Math.abs(y) <= range) {
-                        const px = ox + x * scale;
-                        const py = oy - y * scale;
-                        if (first) {
-                            ctx.moveTo(px, py);
-                            first = false;
-                        } else {
-                            ctx.lineTo(px, py);
-                        }
-                    }
+            } else {
+                drawCurve(k, k > 0 ? '#4facfe' : '#27ae60');
+                if (f2Enabled) {
+                    drawCurve(k2, '#9b59b6');
                 }
-                ctx.stroke();
-                
-                // 左支 (x < 0)
-                ctx.beginPath();
-                first = true;
-                for (let x = -0.01; x >= -range; x -= 0.01) {
-                    const y = k / x;
-                    if (Math.abs(y) <= range) {
-                        const px = ox + x * scale;
-                        const py = oy - y * scale;
-                        if (first) {
-                            ctx.moveTo(px, py);
-                            first = false;
-                        } else {
-                            ctx.lineTo(px, py);
-                        }
-                    }
-                }
-                ctx.stroke();
             }
             
-            updateInfo(k);
+            updateInfo(k, k2, f2Enabled);
         }
         
-        function updateInfo(k) {
+        function updateInfo(k, k2, f2Enabled) {
             if (customFunc) {
-                // 自定义函数模式 - 显示具体函数值
                 const f1 = customFunc(1);
                 const f2 = customFunc(2);
                 const fm1 = customFunc(-1);
@@ -576,9 +825,14 @@
                 return;
             }
             
-            // 标准反比例函数模式
             document.getElementById('formula-k').textContent = k;
-            document.getElementById('k-display').textContent = `k = ${k}`;
+            document.getElementById('k-display').textContent = `k₁ = ${k}`;
+            
+            if(f2Enabled) {
+                document.getElementById('formula-k2').textContent = k2;
+                document.getElementById('k2-display').textContent = `k₂ = ${k2}`;
+            }
+
             document.getElementById('info-k').textContent = k;
             
             if (k > 0) {
@@ -602,6 +856,9 @@
         
         function resetK() {
             setK(1);
+            if(isAnimating) toggleAnimation();
+            document.getElementById('enable-f2').checked = false;
+            toggleFunc2();
         }
         
         function randomK() {
@@ -612,11 +869,13 @@
         }
         
         document.getElementById('k').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
+        document.getElementById('k2').addEventListener('input', () => { customFunc = null; document.getElementById('custom-input').value = ''; draw(); });
         document.getElementById('range').addEventListener('input', () => {
             document.getElementById('range-display').textContent = `±${document.getElementById('range').value}`;
             draw();
         });
         
+        // 初始绘制
         resize();
     </script>
 </body>

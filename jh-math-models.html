@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初中数学几何模型</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #f59e0b;
+            --accent: #10b981;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0; padding: 0; background: var(--bg); color: var(--text);
+        }
+        .header {
+            background: white; padding: 1.5rem; text-align: center;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .header h1 { margin: 0; color: var(--primary); font-size: 1.8rem; }
+        .header p { margin: 0.5rem 0 0 0; color: #64748b; font-size: 1rem; }
+        
+        .container {
+            max-width: 1000px; margin: 2rem auto;
+            background: white; border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .tabs { display: flex; border-bottom: 1px solid var(--border); background: #f1f5f9; }
+        .tab {
+            flex: 1; text-align: center; padding: 1rem;
+            cursor: pointer; font-weight: 600; color: #64748b;
+            border-bottom: 3px solid transparent; transition: all 0.2s;
+        }
+        .tab:hover { color: var(--primary); background: #e2e8f0; }
+        .tab.active {
+            color: var(--primary); border-bottom-color: var(--primary);
+            background: white;
+        }
+        
+        .tab-content { display: none; padding: 1.5rem; }
+        .tab-content.active { display: block; }
+        
+        .desc { margin-bottom: 1rem; color: #475569; line-height: 1.6; font-size: 1.05rem; }
+        .desc strong { color: var(--text); }
+        
+        .canvas-wrapper {
+            position: relative; width: 100%; height: 500px;
+            border: 1px solid var(--border); border-radius: 8px;
+            background: #fafafa; overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        svg { width: 100%; height: 100%; display: block; touch-action: none; }
+        
+        .controls {
+            margin-top: 1rem; display: flex; gap: 1rem; justify-content: center; align-items: center;
+            background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);
+        }
+        button {
+            background: var(--primary); color: white; border: none;
+            padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 600; font-size: 1rem;
+            cursor: pointer; transition: background 0.2s; box-shadow: 0 2px 4px rgba(37,99,235,0.2);
+        }
+        button:hover { background: #1d4ed8; }
+        
+        input[type="range"] { width: 250px; cursor: pointer; }
+        label { font-weight: 600; color: #475569; }
+        
+        /* SVG Elements */
+        .line { stroke: #334155; stroke-width: 2; }
+        .line-dashed { stroke: #94a3b8; stroke-width: 2; stroke-dasharray: 6,4; }
+        .line-highlight { stroke: var(--secondary); stroke-width: 3; }
+        .point { fill: white; stroke: var(--primary); stroke-width: 2; cursor: grab; transition: fill 0.2s; }
+        .point:hover { fill: #eff6ff; stroke-width: 3; }
+        .point:active { cursor: grabbing; fill: #dbeafe; }
+        .point-fixed { fill: #cbd5e1; stroke: #64748b; stroke-width: 2; }
+        .text { font-size: 16px; font-weight: bold; fill: #1e293b; pointer-events: none; user-select: none; }
+        .text-small { font-size: 14px; fill: #64748b; font-weight: normal; }
+        .polygon { fill: rgba(37, 99, 235, 0.1); stroke: var(--primary); stroke-width: 2; }
+        .polygon-alt { fill: rgba(245, 158, 11, 0.1); stroke: var(--secondary); stroke-width: 2; }
+        .angle-arc { fill: none; stroke: var(--primary); stroke-width: 2; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>初中数学几何模型交互演示</h1>
+    <p>拖动高亮顶点或使用控件来探索几何模型的性质</p>
+</div>
+
+<div class="container">
+    <div class="tabs">
+        <div class="tab active">1. 一线三等角</div>
+        <div class="tab">2. 手拉手模型</div>
+        <div class="tab">3. 半角模型</div>
+        <div class="tab">4. 将军饮马</div>
+    </div>
+    
+    <!-- Model 1: K-type Perpendiculars -->
+    <div id="tab-1" class="tab-content active">
+        <div class="desc">
+            <strong>一线三等角 (K型全等/相似)：</strong> 在直线 $L$ 上有 $B, C, P$ 三点，其中 $AB \perp L$ 于 $B$，$DC \perp L$ 于 $C$，且 $\angle APD = 90^\circ$。
+            拖动点 <strong>P</strong> 在直线上移动，观察 $\triangle ABP \sim \triangle PCD$ 的关系。
+        </div>
+        <div class="canvas-wrapper">
+            <svg id="svg-m1" viewBox="0 0 1000 500">
+                <line x1="50" y1="400" x2="950" y2="400" class="line" />
+                <polygon id="m1-poly1" class="polygon" />
+                <polygon id="m1-poly2" class="polygon-alt" />
+                
+                <polyline id="m1-angle-p" fill="none" stroke="#ef4444" stroke-width="2" />
+                
+                <line id="m1-ap" class="line-highlight" />
+                <line id="m1-pd" class="line-highlight" />
+                
+                <circle id="m1-ptA" class="point-fixed" cx="200" cy="150" r="6" />
+                <circle id="m1-ptB" class="point-fixed" cx="200" cy="400" r="6" />
+                <circle id="m1-ptC" class="point-fixed" cx="700" cy="400" r="6" />
+                <circle id="m1-ptD" class="point-fixed" cx="700" cy="250" r="6" />
+                <circle id="m1-ptP" class="point draggable" cx="400" cy="400" r="8" />
+                
+                <text x="180" y="140" class="text">A</text>
+                <text x="180" y="420" class="text">B</text>
+                <text x="710" y="420" class="text">C</text>
+                <text id="m1-txtD" class="text">D</text>
+                <text id="m1-txtP" class="text">P</text>
+                
+                <!-- Right angles at B and C -->
+                <polyline points="200,380 220,380 220,400" fill="none" stroke="black" />
+                <polyline points="700,380 680,380 680,400" fill="none" stroke="black" />
+            </svg>
+        </div>
+        <div class="controls">
+            <label>请在画布中左右拖动点 P</label>
+        </div>
+    </div>
+    
+    <!-- Model 2: Hand-in-hand -->
+    <div id="tab-2" class="tab-content">
+        <div class="desc">
+            <strong>手拉手模型：</strong> 两个共顶点的正三角形 $\triangle ABC$ 和 $\triangle ADE$。
+            连接 $BD$ 和 $CE$，可证 $\triangle ABD \cong \triangle ACE$，从而 $BD = CE$ 且夹角为 $60^\circ$。
+            拖动点 <strong>D</strong> 旋转 $\triangle ADE$，观察线段 $BD$ 与 $CE$ 的长度关系。
+        </div>
+        <div class="canvas-wrapper">
+            <svg id="svg-m2" viewBox="0 0 1000 500">
+                <polygon id="m2-polyABC" class="polygon" />
+                <polygon id="m2-polyADE" class="polygon" />
+                <polygon id="m2-polyABD" fill="rgba(245,158,11,0.2)" stroke="none" />
+                <polygon id="m2-polyACE" fill="rgba(16,185,129,0.2)" stroke="none" />
+                
+                <line id="m2-bd" stroke="#f59e0b" stroke-width="3" />
+                <line id="m2-ce" stroke="#10b981" stroke-width="3" />
+                <line id="m2-ab" class="line" />
+                <line id="m2-ac" class="line" />
+                <line id="m2-bc" class="line" />
+                <line id="m2-ad" class="line" />
+                <line id="m2-ae" class="line" />
+                <line id="m2-de" class="line" />
+                
+                <circle cx="450" cy="250" r="150" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="5,5" />
+                
+                <circle id="m2-ptA" class="point-fixed" cx="450" cy="250" r="6" />
+                <circle id="m2-ptB" class="point-fixed" cx="300" cy="350" r="6" />
+                <circle id="m2-ptC" class="point-fixed" r="6" />
+                <circle id="m2-ptD" class="point draggable" r="8" />
+                <circle id="m2-ptE" class="point-fixed" r="6" />
+                
+                <text x="440" y="240" class="text">A</text>
+                <text x="280" y="370" class="text">B</text>
+                <text id="m2-txtC" class="text">C</text>
+                <text id="m2-txtD" class="text">D</text>
+                <text id="m2-txtE" class="text">E</text>
+                
+                <text id="m2-lenText" x="50" y="50" class="text" fill="#1e293b" style="font-size: 18px;">BD = CE = 0</text>
+            </svg>
+        </div>
+        <div class="controls">
+            <label>请沿虚线圆轨道拖动点 D</label>
+        </div>
+    </div>
+    
+    <!-- Model 3: Half-angle model -->
+    <div id="tab-3" class="tab-content">
+        <div class="desc">
+            <strong>半角模型：</strong> 正方形 $ABCD$ 中，$\angle EAF = 45^\circ$。
+            将 $\triangle ABE$ 绕点 $A$ 旋转 $90^\circ$ 至 $\triangle ADE'$，可证 $E', D, F$ 共线，且 $\triangle AEF \cong \triangle AE'F$。
+            结论：$EF = BE + DF$。拖动点 <strong>E</strong> 或点击按钮播放折叠/旋转动画。
+        </div>
+        <div class="canvas-wrapper">
+            <svg id="svg-m3" viewBox="0 0 1000 500">
+                <polygon points="350,100 350,400 650,400 650,100" fill="none" class="line" />
+                
+                <polygon id="m3-polyAEF" class="polygon" />
+                <polygon id="m3-polyADF" fill="rgba(245,158,11,0.1)" stroke="var(--secondary)" stroke-width="2" />
+                <polygon id="m3-polyABE_t" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="2" />
+                
+                <line id="m3-ef" class="line-highlight" stroke="#ef4444" />
+                <line id="m3-ae" class="line" stroke-dasharray="4,4" />
+                <line id="m3-af" class="line" stroke-dasharray="4,4" />
+                
+                <path id="m3-arc" class="angle-arc" />
+                <text id="m3-angle-text" class="text-small">45°</text>
+                
+                <circle id="m3-ptE" class="point draggable" cy="400" r="8" />
+                <circle id="m3-ptF" class="point-fixed" cx="650" r="6" />
+                <circle id="m3-ptE_t" class="point-fixed" r="5" fill="#10b981" stroke="none" />
+                
+                <text x="330" y="90" class="text">A</text>
+                <text x="330" y="420" class="text">B</text>
+                <text x="660" y="420" class="text">C</text>
+                <text x="660" y="90" class="text">D</text>
+                <text id="m3-txtE" class="text">E</text>
+                <text id="m3-txtF" class="text">F</text>
+                <text id="m3-txtE_t" class="text" fill="#10b981">E'</text>
+                
+                <text id="m3-eq" x="720" y="250" class="text" style="font-size: 18px;">EF = BE + DF</text>
+            </svg>
+        </div>
+        <div class="controls">
+            <label>拖动点 E 或滑动: </label>
+            <input type="range" id="m3-slider-e" min="350" max="650" value="450">
+            <button id="m3-btn-anim">播放旋转动画</button>
+        </div>
+    </div>
+    
+    <!-- Model 4: Shortest Path -->
+    <div id="tab-4" class="tab-content">
+        <div class="desc">
+            <strong>将军饮马 (最短路径)：</strong> 直线 $L$ 同侧有 $A, B$ 两点，在 $L$ 上求一点 $P$ 使得 $AP + PB$ 最小。
+            作点 $A$ 关于 $L$ 的对称点 $A'$，连接 $A'B$ 交 $L$ 于点 $P$，此时路径最短。拖动点 <strong>P</strong> 观察距离总和。
+        </div>
+        <div class="canvas-wrapper">
+            <svg id="svg-m4" viewBox="0 0 1000 500">
+                <line x1="50" y1="350" x2="950" y2="350" class="line" stroke="#3b82f6" stroke-width="4" />
+                <text x="50" y="340" class="text" fill="#3b82f6">L (河岸)</text>
+                
+                <line id="m4-aa" class="line-dashed" stroke="#94a3b8" />
+                <line id="m4-ap" class="line-highlight" />
+                <line id="m4-a_p" class="line-dashed" stroke="#f59e0b" />
+                <line id="m4-pb" class="line-highlight" />
+                
+                <circle id="m4-ptBest" r="6" fill="none" stroke="#ef4444" stroke-width="2" />
+                <text id="m4-txtBest" class="text-small" fill="#ef4444">最短路径点</text>
+                
+                <circle id="m4-ptA" class="point-fixed" cx="200" cy="150" r="6" />
+                <circle id="m4-ptB" class="point-fixed" cx="700" cy="200" r="6" />
+                <circle id="m4-ptA_" class="point-fixed" cx="200" cy="550" r="6" />
+                <circle id="m4-ptP" class="point draggable" cy="350" r="8" />
+                
+                <text x="180" y="140" class="text">A (营地)</text>
+                <text x="710" y="190" class="text">B (营地)</text>
+                <text x="180" y="570" class="text">A'</text>
+                <text id="m4-txtP" class="text">P</text>
+                
+                <text x="400" y="50" class="text" style="font-size: 18px;" id="m4-len1">AP + PB = ?</text>
+                <text x="400" y="80" class="text" style="font-size: 18px; fill: #64748b" id="m4-len2">A'P + PB = ?</text>
+            </svg>
+        </div>
+        <div class="controls">
+            <label>请在河岸 L 上左右拖动点 P</label>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab Switching
+    document.querySelectorAll('.tab').forEach((tab, index) => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('tab-' + (index + 1)).classList.add('active');
+        });
+    });
+
+    // Helper Functions
+    const setAttr = (id, attrs) => {
+        const el = document.getElementById(id);
+        if (el) {
+            for (let k in attrs) el.setAttribute(k, attrs[k]);
+        }
+    };
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    };
+    const dist = (x1,y1, x2,y2) => Math.hypot(x1-x2, y1-y2);
+
+    function setupDrag(svgId, draggableSelector, onDrag, onEnd) {
+        const svgElement = document.getElementById(svgId);
+        let isDragging = false;
+        let draggedPt = null;
+
+        function getMousePos(e) {
+            let CTM = svgElement.getScreenCTM();
+            let pt = svgElement.createSVGPoint();
+            if (e.touches && e.touches.length > 0) {
+                pt.x = e.touches[0].clientX;
+                pt.y = e.touches[0].clientY;
+            } else {
+                pt.x = e.clientX;
+                pt.y = e.clientY;
+            }
+            return pt.matrixTransform(CTM.inverse());
+        }
+
+        function startDrag(e) {
+            if (e.target.matches(draggableSelector)) {
+                isDragging = true;
+                draggedPt = e.target;
+                if (e.touches) e.preventDefault();
+            }
+        }
+
+        function drag(e) {
+            if (isDragging && draggedPt) {
+                e.preventDefault();
+                let coord = getMousePos(e);
+                onDrag(draggedPt.id, coord.x, coord.y);
+            }
+        }
+
+        function endDrag(e) {
+            if (isDragging) {
+                isDragging = false;
+                draggedPt = null;
+                if (onEnd) onEnd();
+            }
+        }
+
+        svgElement.addEventListener('mousedown', startDrag);
+        svgElement.addEventListener('mousemove', drag);
+        window.addEventListener('mouseup', endDrag);
+        
+        svgElement.addEventListener('touchstart', startDrag, {passive: false});
+        svgElement.addEventListener('touchmove', drag, {passive: false});
+        window.addEventListener('touchend', endDrag);
+    }
+
+    // Model 1: K-type Perpendiculars
+    function initModel1() {
+        let A = {x: 200, y: 150};
+        let B = {x: 200, y: 400};
+        let C = {x: 700, y: 400};
+        let P = {x: 400, y: 400};
+        
+        function updateM1(px) {
+            P.x = Math.max(200, Math.min(700, px));
+            let D_y = P.y - ((A.x - P.x) * (C.x - P.x)) / (A.y - P.y);
+            let D = {x: C.x, y: D_y};
+            
+            setAttr('m1-ptP', {cx: P.x, cy: P.y});
+            setAttr('m1-ptD', {cx: D.x, cy: D.y});
+            setAttr('m1-txtP', {x: P.x - 5, y: P.y + 25});
+            setAttr('m1-txtD', {x: D.x + 10, y: D.y + 5});
+            
+            setAttr('m1-poly1', {points: `${A.x},${A.y} ${B.x},${B.y} ${P.x},${P.y}`});
+            setAttr('m1-poly2', {points: `${P.x},${P.y} ${C.x},${C.y} ${D.x},${D.y}`});
+            setAttr('m1-ap', {x1: A.x, y1: A.y, x2: P.x, y2: P.y});
+            setAttr('m1-pd', {x1: P.x, y1: P.y, x2: D.x, y2: D.y});
+            
+            // Right angle at P
+            let lenPA = dist(P.x, P.y, A.x, A.y);
+            let lenPD = dist(P.x, P.y, D.x, D.y);
+            let u1 = (A.x - P.x) / lenPA, v1 = (A.y - P.y) / lenPA;
+            let u2 = (D.x - P.x) / lenPD, v2 = (D.y - P.y) / lenPD;
+            let size = 20;
+            let p1 = {x: P.x + size*u1, y: P.y + size*v1};
+            let p2 = {x: P.x + size*(u1+u2), y: P.y + size*(v1+v2)};
+            let p3 = {x: P.x + size*u2, y: P.y + size*v2};
+            setAttr('m1-angle-p', {points: `${P.x},${P.y} ${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`});
+        }
+        
+        setupDrag('svg-m1', '.draggable', (id, x, y) => {
+            if(id === 'm1-ptP') updateM1(x);
+        });
+        updateM1(350);
+    }
+
+    // Model 2: Hand-in-hand
+    function initModel2() {
+        let A = {x: 450, y: 250};
+        let B = {x: 300, y: 350};
+        
+        function rotate(p, center, angleDeg) {
+            let rad = angleDeg * Math.PI / 180;
+            let dx = p.x - center.x;
+            let dy = p.y - center.y;
+            return {
+                x: center.x + dx * Math.cos(rad) - dy * Math.sin(rad),
+                y: center.y + dx * Math.sin(rad) + dy * Math.cos(rad)
+            };
+        }
+        
+        let C = rotate(B, A, -60);
+        setAttr('m2-ptC', {cx: C.x, cy: C.y});
+        setAttr('m2-txtC', {x: C.x + 10, y: C.y + 10});
+        setAttr('m2-polyABC', {points: `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`});
+        setAttr('m2-ab', {x1: A.x, y1: A.y, x2: B.x, y2: B.y});
+        setAttr('m2-ac', {x1: A.x, y1: A.y, x2: C.x, y2: C.y});
+        setAttr('m2-bc', {x1: B.x, y1: B.y, x2: C.x, y2: C.y});
+        
+        let rD = 150;
+        
+        function updateM2(angleRad) {
+            let D = {
+                x: A.x + rD * Math.cos(angleRad),
+                y: A.y + rD * Math.sin(angleRad)
+            };
+            let E = rotate(D, A, -60);
+            
+            setAttr('m2-ptD', {cx: D.x, cy: D.y});
+            setAttr('m2-ptE', {cx: E.x, cy: E.y});
+            setAttr('m2-txtD', {x: D.x + 10, y: D.y - 10});
+            setAttr('m2-txtE', {x: E.x + 10, y: E.y + 20});
+            
+            setAttr('m2-polyADE', {points: `${A.x},${A.y} ${D.x},${D.y} ${E.x},${E.y}`});
+            setAttr('m2-polyABD', {points: `${A.x},${A.y} ${B.x},${B.y} ${D.x},${D.y}`});
+            setAttr('m2-polyACE', {points: `${A.x},${A.y} ${C.x},${C.y} ${E.x},${E.y}`});
+            
+            setAttr('m2-ad', {x1: A.x, y1: A.y, x2: D.x, y2: D.y});
+            setAttr('m2-ae', {x1: A.x, y1: A.y, x2: E.x, y2: E.y});
+            setAttr('m2-de', {x1: D.x, y1: D.y, x2: E.x, y2: E.y});
+            
+            setAttr('m2-bd', {x1: B.x, y1: B.y, x2: D.x, y2: D.y});
+            setAttr('m2-ce', {x1: C.x, y1: C.y, x2: E.x, y2: E.y});
+            
+            let lenBD = dist(B.x, B.y, D.x, D.y).toFixed(1);
+            setText('m2-lenText', `BD = ${lenBD}   CE = ${lenBD}`);
+        }
+        
+        setupDrag('svg-m2', '.draggable', (id, x, y) => {
+            if(id === 'm2-ptD') {
+                let angle = Math.atan2(y - A.y, x - A.x);
+                updateM2(angle);
+            }
+        });
+        updateM2(Math.PI / 18);
+    }
+
+    // Model 3: Half-angle model
+    function initModel3() {
+        let A = {x: 350, y: 100};
+        let B = {x: 350, y: 400};
+        let D = {x: 650, y: 100};
+        
+        let animT = 0;
+        let animReq = null;
+        let isAnimating = false;
+        let animDir = 1;
+        
+        let sliderE = document.getElementById('m3-slider-e');
+        let btnAnim = document.getElementById('m3-btn-anim');
+        
+        function rotate(p, center, angleDeg) {
+            let rad = angleDeg * Math.PI / 180;
+            let dx = p.x - center.x;
+            let dy = p.y - center.y;
+            return {
+                x: center.x + dx * Math.cos(rad) - dy * Math.sin(rad),
+                y: center.y + dx * Math.sin(rad) + dy * Math.cos(rad)
+            };
+        }
+        
+        function updateM3(xE, t) {
+            xE = Math.max(350, Math.min(650, xE));
+            let thetaRad = Math.atan2(xE - 350, 300); // 300 is AB length
+            let thetaDeg = thetaRad * 180 / Math.PI;
+            
+            let alphaDeg = 45 - thetaDeg;
+            let yF = 100 + 300 * Math.tan(alphaDeg * Math.PI / 180);
+            
+            let E = {x: xE, y: 400};
+            let F = {x: 650, y: yF};
+            
+            setAttr('m3-ptE', {cx: E.x, cy: E.y});
+            setAttr('m3-ptF', {cx: F.x, cy: F.y});
+            setAttr('m3-txtE', {x: E.x - 10, y: E.y + 25});
+            setAttr('m3-txtF', {x: F.x + 15, y: F.y + 5});
+            
+            setAttr('m3-polyAEF', {points: `${A.x},${A.y} ${E.x},${E.y} ${F.x},${F.y}`});
+            setAttr('m3-polyADF', {points: `${A.x},${A.y} ${D.x},${D.y} ${F.x},${F.y}`});
+            
+            setAttr('m3-ef', {x1: E.x, y1: E.y, x2: F.x, y2: F.y});
+            setAttr('m3-ae', {x1: A.x, y1: A.y, x2: E.x, y2: E.y});
+            setAttr('m3-af', {x1: A.x, y1: A.y, x2: F.x, y2: F.y});
+            
+            let E_t = rotate(E, A, -90 * t);
+            let B_t = rotate(B, A, -90 * t);
+            
+            setAttr('m3-polyABE_t', {points: `${A.x},${A.y} ${B_t.x},${B_t.y} ${E_t.x},${E_t.y}`});
+            
+            if (t > 0.01) {
+                setAttr('m3-ptE_t', {cx: E_t.x, cy: E_t.y, display: 'inline'});
+                setAttr('m3-txtE_t', {x: E_t.x - 10, y: E_t.y - 15, display: 'inline'});
+            } else {
+                setAttr('m3-ptE_t', {display: 'none'});
+                setAttr('m3-txtE_t', {display: 'none'});
+            }
+            
+            let r = 50;
+            let lenAE = dist(A.x, A.y, E.x, E.y);
+            let lenAF = dist(A.x, A.y, F.x, F.y);
+            let pE = {x: A.x + r*(E.x-A.x)/lenAE, y: A.y + r*(E.y-A.y)/lenAE};
+            let pF = {x: A.x + r*(F.x-A.x)/lenAF, y: A.y + r*(F.y-A.y)/lenAF};
+            setAttr('m3-arc', {d: `M ${pE.x} ${pE.y} A ${r} ${r} 0 0 0 ${pF.x} ${pF.y}`});
+            
+            let midRad = (thetaDeg + 45/2) * Math.PI / 180;
+            let pText = {x: A.x + (r+20)*Math.sin(midRad), y: A.y + (r+20)*Math.cos(midRad)};
+            setAttr('m3-angle-text', {x: pText.x - 10, y: pText.y + 5});
+            
+            sliderE.value = xE;
+        }
+        
+        sliderE.addEventListener('input', (e) => {
+            if(!isAnimating) updateM3(parseFloat(e.target.value), animT);
+        });
+        
+        setupDrag('svg-m3', '.draggable', (id, x, y) => {
+            if(id === 'm3-ptE' && !isAnimating) updateM3(x, animT);
+        });
+        
+        btnAnim.addEventListener('click', () => {
+            if(isAnimating) return;
+            isAnimating = true;
+            animDir = animT === 0 ? 1 : -1;
+            let startTime = performance.now();
+            let startT = animT;
+            
+            function step(time) {
+                let progress = Math.min(1, (time - startTime) / 1000);
+                let currentT = startT + animDir * progress;
+                let easeT = currentT < 0.5 ? 2 * currentT * currentT : -1 + (4 - 2 * currentT) * currentT;
+                animT = currentT;
+                updateM3(parseFloat(sliderE.value), easeT);
+                
+                if(progress < 1) {
+                    animReq = requestAnimationFrame(step);
+                } else {
+                    isAnimating = false;
+                    animT = animDir === 1 ? 1 : 0;
+                    btnAnim.textContent = animT === 1 ? '恢复原状' : '播放旋转动画';
+                }
+            }
+            animReq = requestAnimationFrame(step);
+        });
+        updateM3(450, 0);
+    }
+
+    // Model 4: Shortest Path
+    function initModel4() {
+        let A = {x: 200, y: 150};
+        let B = {x: 700, y: 200};
+        let A_ = {x: 200, y: 550}; 
+        
+        let xBest = 200 + 500 * (550 - 350) / (550 - 200);
+        
+        setAttr('m4-aa', {x1: A.x, y1: A.y, x2: A_.x, y2: A_.y});
+        setAttr('m4-ptBest', {cx: xBest, cy: 350});
+        setAttr('m4-txtBest', {x: xBest - 30, y: 375});
+        
+        function updateM4(xP) {
+            xP = Math.max(50, Math.min(950, xP));
+            let P = {x: xP, y: 350};
+            
+            setAttr('m4-ptP', {cx: P.x, cy: P.y});
+            setAttr('m4-txtP', {x: P.x + 10, y: P.y - 15});
+            
+            setAttr('m4-ap', {x1: A.x, y1: A.y, x2: P.x, y2: P.y});
+            setAttr('m4-a_p', {x1: A_.x, y1: A_.y, x2: P.x, y2: P.y});
+            setAttr('m4-pb', {x1: P.x, y1: P.y, x2: B.x, y2: B.y});
+            
+            let lenAP = dist(A.x, A.y, P.x, P.y);
+            let lenPB = dist(P.x, P.y, B.x, B.y);
+            let sum = (lenAP + lenPB).toFixed(1);
+            
+            let isMin = Math.abs(xP - xBest) < 2;
+            let color = isMin ? '#ef4444' : '#1e293b';
+            let bold = isMin ? 'bold' : 'normal';
+            
+            let text1 = document.getElementById('m4-len1');
+            text1.textContent = `AP + PB = ${sum}${isMin ? ' (最小)' : ''}`;
+            text1.style.fill = color;
+            text1.style.fontWeight = bold;
+            
+            let text2 = document.getElementById('m4-len2');
+            text2.textContent = `A'P + PB = ${sum}`;
+            text2.style.fill = color;
+        }
+        
+        setupDrag('svg-m4', '.draggable', (id, x, y) => {
+            if(id === 'm4-ptP') updateM4(x);
+        }, () => {
+            let P = document.getElementById('m4-ptP');
+            let cx = parseFloat(P.getAttribute('cx'));
+            if (Math.abs(cx - xBest) < 15) {
+                updateM4(xBest);
+            }
+        });
+        
+        updateM4(400);
+    }
+
+    // Initialize all models
+    initModel1();
+    initModel2();
+    initModel3();
+    initModel4();
+</script>
+</body>
+</html>
