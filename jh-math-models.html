@@ -442,7 +442,7 @@
             setAttr('m2-ce', {x1: C.x, y1: C.y, x2: E.x, y2: E.y});
             
             let lenBD = dist(B.x, B.y, D.x, D.y).toFixed(1);
-            setText('m2-lenText', `BD = ${(dist(B.x, B.y, D.x, D.y)/10).toFixed(1)}   CE = ${(dist(B.x, B.y, D.x, D.y)/10).toFixed(1)}`);
+            setText('m2-lenText', `BD = ${(dist(B.x, B.y, D.x, D.y)/40).toFixed(1)}   CE = ${(dist(B.x, B.y, D.x, D.y)/40).toFixed(1)}`);
         }
         
         setupDrag('svg-m2', '.draggable', (id, x, y) => {
@@ -525,9 +525,9 @@
             let pText = {x: A.x + (r+20)*Math.sin(midRad), y: A.y + (r+20)*Math.cos(midRad)};
             setAttr('m3-angle-text', {x: pText.x - 10, y: pText.y + 5});
 
-            let EF = (dist(E.x, E.y, F.x, F.y)/10).toFixed(1);
-            let BE = (dist(B.x, B.y, E.x, E.y)/10).toFixed(1);
-            let DF = (dist(D.x, D.y, F.x, F.y)/10).toFixed(1);
+            let EF = (dist(E.x, E.y, F.x, F.y)/40).toFixed(1);
+            let BE = (dist(B.x, B.y, E.x, E.y)/40).toFixed(1);
+            let DF = (dist(D.x, D.y, F.x, F.y)/40).toFixed(1);
             setText('m3-eq', `EF = ${EF} = BE(${BE}) + DF(${DF})`);
 
             sliderE.value = xE;
@@ -593,7 +593,7 @@
             
             let lenAP = dist(A.x, A.y, P.x, P.y);
             let lenPB = dist(P.x, P.y, B.x, B.y);
-            let sum = ((lenAP + lenPB) / 10).toFixed(1);
+            let sum = ((lenAP + lenPB) / 40).toFixed(1);
             
             let isMin = Math.abs(xP - xBest) < 2;
             let color = isMin ? '#ef4444' : '#1e293b';
