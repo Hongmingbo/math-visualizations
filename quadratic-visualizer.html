@@ -580,6 +580,7 @@
             
             const dist = Math.sqrt((px - vpx)**2 + (py - vpy)**2);
             if (dist < 20) {
+                if(animReq) toggleAnimation();
                 isDraggingVertex = true;
                 canvas.style.cursor = 'grabbing';
                 draw();
@@ -653,6 +654,7 @@
         });
         
         function setExample(a, b, c) {
+            if (animReq) toggleAnimation();
             document.getElementById('a').value = a;
             document.getElementById('b').value = b;
             document.getElementById('c').value = c;
@@ -665,9 +667,9 @@
             clearCustom();
         }
         
-        document.getElementById('a').addEventListener('input', draw);
-        document.getElementById('b').addEventListener('input', draw);
-        document.getElementById('c').addEventListener('input', draw);
+        document.getElementById('a').addEventListener('input', () => { if(animReq) toggleAnimation(); draw(); });
+        document.getElementById('b').addEventListener('input', () => { if(animReq) toggleAnimation(); draw(); });
+        document.getElementById('c').addEventListener('input', () => { if(animReq) toggleAnimation(); draw(); });
         document.getElementById('scale').addEventListener('input', draw);
         
         draw();

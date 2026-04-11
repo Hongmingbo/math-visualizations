@@ -663,6 +663,7 @@
             
             if (target) {
                 isDragging = true;
+            if(isAnimating) toggleAnimation();
                 dragTarget = target;
             }
         });

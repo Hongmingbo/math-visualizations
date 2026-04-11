@@ -492,22 +492,31 @@
         // 解析自定义函数
         function parseFunction(expr) {
             const cleanExpr = expr.replace(/\s/g, '').replace(/\^/g, '**');
-            return (x) => {
-                try {
-                    const keys = Object.getOwnPropertyNames(Math);
-                    const values = keys.map(k => Math[k]);
-                    const f = new Function(...keys, 'x', `return ${cleanExpr};`);
-                    return f(...values, x);
-                } catch(e) { return NaN; }
-            };
+            try {
+                const keys = Object.getOwnPropertyNames(Math);
+                const values = keys.map(k => Math[k]);
+                const f = new Function(...keys, 'x', `return ${cleanExpr};`);
+                f(...values, 0); // test
+                return (x) => {
+                    try { return f(...values, x); }
+                    catch(e) { return NaN; }
+                };
+            } catch(e) {
+                return null;
+            }
         }
         
         function applyCustom() {
             const input = document.getElementById('custom-input').value;
             if (!input) { clearCustom(); return; }
             customExpr = input;
-            customFunc = parseFunction(input);
-            draw();
+            const parsed = parseFunction(input);
+            if (parsed) {
+                customFunc = parsed;
+                draw();
+            } else {
+                alert("函数解析失败，请检查语法！");
+            }
         }
         
         function clearCustom() {
@@ -822,6 +831,7 @@
 
             if (Math.hypot(mx - px, my - py) < 20) {
                 isDraggingAngle = true;
+                if(animReq) toggleAnimation();
                 draw();
             }
         });
@@ -895,6 +905,7 @@
 
             if (Math.hypot(mx - px, my - py) < 25) {
                 isDraggingGraphPoint = true;
+                if(animReq) toggleAnimation();
                 draw();
             }
         });
@@ -928,7 +939,7 @@
             if (!isDraggingGraphPoint) graphCanvas.style.cursor = 'crosshair';
         });
         
-        document.getElementById('angle').addEventListener('input', draw);
+        document.getElementById('angle').addEventListener('input', () => { if(animReq) toggleAnimation(); draw(); });
         document.getElementById('amplitude').addEventListener('input', draw);
         document.getElementById('omega').addEventListener('input', draw);
         
