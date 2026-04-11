@@ -817,15 +817,19 @@
                 ctx.lineWidth = 4;
                 ctx.beginPath();
                 let first = true;
+                let lastY = null;
                 for (let x = -range; x <= range; x += 0.01) {
                     const y = customFunc(x);
                     if (!isNaN(y) && Math.abs(y) <= range) {
+                        if (lastY !== null && Math.abs(y - lastY) > range) first = true;
                         const px = ox + x * scale;
                         const py = oy - y * scale;
                         if (first) { ctx.moveTo(px, py); first = false; }
                         else { ctx.lineTo(px, py); }
+                        lastY = y;
                     } else {
                         first = true;
+                        lastY = null;
                     }
                 }
                 ctx.stroke();
